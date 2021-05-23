@@ -1,0 +1,13 @@
+.SailsteerWidget .widgetData{
+    font-size: 2.7em;
+    background: #cfd8dc;
+}
+
+.SailsteerWidget canvas{
+    height: 96%;
+    width: 106%;
+}
+
+canvas.widgetData {
+    width: 116%;
+}
