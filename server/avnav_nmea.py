@@ -223,6 +223,7 @@ class NMEAParser(object):
             inversMatch=True
           continue
     except:
+      p("plugin run exception: %s",traceback.format_exc())  
       pass
     if inversMatch:
       return False

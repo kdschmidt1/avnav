@@ -1,11 +1,16 @@
-.testPlugin_CourseWidget .widgetData{
-    font-size: 2.5em;
+SailsteerWidget .widgetData{
+    font-size: 2.7em;
 }
 
-.testPlugin_CourseWidget canvas{
-    height: 40%;
+SailsteerWidget canvas{
+    height: 80%;
 }
 
-.testPlugin_ServerWidget .reset.running{
+SailsteerWidget .reset.running{
     color: yellow;
+}
+
+SailsteerWidget .widget{
+    color: yellow;
+    background: #383838
 }

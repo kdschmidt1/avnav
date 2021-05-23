@@ -40,9 +40,10 @@ class Plugin(object):
   PATHSTW = "gps.STW"
   PATHGMM = "gps.MagVar"
   WMM_FILE = 'WMM2020.COF'
-  OWNID = 'IN'
+  OWNID = 'KS'
   outFilter = [] 
-  FILTER = ['$HDG','$HDM','$HDT','$VHW']
+  #FILTER = ['$HDG','$HDM','$HDT','$VHW', 'MWD', 'MWV','VWR']
+  FILTER = []
   CONFIG = [
       {
       'name':'WMM_FILE',
@@ -226,7 +227,6 @@ class Plugin(object):
         self.api.error(" error in calculation of magnetic Variation")
 
       if 'windSpeed' in gpsdata:
-        computesWind = True
         if gpsdata['windReference'] == 'R':
             computesWind = True
             if (self.calcTrueWind(gpsdata)):
@@ -259,7 +259,7 @@ class Plugin(object):
           waitTime = 0.01
           runNext = True
         self.variation_FromSensor = False
-        seq, data = self.api.fetchFromQueue(seq, number=100, waitTime=waitTime, filter=self.FILTER)
+        seq, data = self.api.fetchFromQueue(seq, number=10, waitTime=waitTime, filter=self.FILTER)
         if len(data) > 0:
           for line in data:
             self.parseData(line)
@@ -339,6 +339,59 @@ class Plugin(object):
     tag = darray[0][3:]
     rt = {}
     try:
+        
+#MWV - Wind Speed and Angle
+#
+#        1   2 3   4 5
+#        |   | |   | |
+# $--MWV,x.x,a,x.x,a*hh<CR><LF>#
+
+ #Field Number: 
+ # 1) Wind Angle, 0 to 360 degrees
+ # 2) Reference, R = Relative, T = True
+ # 3) Wind Speed
+ # 4) Wind Speed Units, K/M/N
+ # 5) Status, A = Data Valid
+ # 6) Checksum        
+        
+      if tag == 'MWV':
+        if not tag in self.receivedTags: 
+            self.receivedTags.append(tag)
+        rt['angle'] = float(darray[1] or '0')
+        rt['relortrue'] = darray[2]
+        rt['speed'] = darray[3]
+        rt['speedunit'] = darray[4]
+        rt['status'] = darray[5]
+        
+        if(rt['relortrue'] == 'R'):
+          #self.api.addData(self.PATHHDG_T, self.LimitWinkel(rt['Heading']))
+          pass
+        else:
+          #self.api.addData(self.PATHHDG_M, self.LimitWinkel(rt['Heading']))
+          pass
+        return True
+    
+    
+#MWD - Wind Direction & Speed
+#The direction from which the wind blows across the earth’s surface, with respect to north, and the speed of
+#the wind.
+#$--MWD,x.x,T,x.x,M,x.x,N,x.x,M*hh<CR><LF>
+# 1 Wind direction, 0 to 359 degrees True
+#2  'T'
+# 3 Wind direction, 0 to 359 degrees Magnetic
+#4 'M'
+# 5 Wind speed knots
+#6 'N'
+# 7 Wind speed m/s
+#8 'M'     
+      if tag == 'MWD':
+        if not tag in self.receivedTags: 
+            self.receivedTags.append(tag)
+        if(len(darray[7]) > 0): rt['speedms'] = darray[7]
+        if(len(darray[5]) > 0): rt['speedkn'] = darray[5]
+        if(len(darray[3]) > 0): rt['directionmag'] = float(darray[3] or '0')
+        if(len(darray[1]) > 0): rt['directiontrue'] = float(darray[1] or '0')# == TWD
+
       if tag == 'HDG':
         if not tag in self.receivedTags: 
             self.receivedTags.append(tag)
