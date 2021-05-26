@@ -74,6 +74,26 @@
   .nightColors();
   .flex-shrink(0);
 }
+
+.widgetContainerfloating {
+  overflow: visible;
+  -webkit-box-orient: vertical;
+  -moz-box-orient: vertical;
+  -ms-flex-direction: column;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: end;
+  -moz-box-pack: end;
+  -ms-flex-pack: end;
+  -webkit-justify-content: flex-end;
+  justify-content: flex-end;
+  left: 18em;
+  top: 2em;
+  height: 6em;
+  width: 5em;
+}
+
+
 .widgetContainer.horizontal{
   .flex-wrap(wrap);
   max-height: @horizontalContainerHeight;

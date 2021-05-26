@@ -1330,6 +1330,12 @@ span.valuePrefix{
 }
 
 #settingspage{
+    .centerSection{
+      .flex-display();
+      .flex-direction(row);
+      .flex(1);
+      min-height: 0;
+    }
     .leftSection{
       .flex-display();
       .flex-direction(row);
@@ -1515,7 +1521,21 @@ span.valuePrefix{
     min-width: 0;
     min-height: 0;
   }
-  .bottomSection{
+  .centerSection{
+    .flex-display();
+    .flex(1);
+    .flex-direction(column);
+position: absolute;
+    width: 81%;
+    height: 87%;
+    min-width: 0;
+    min-height: 0;
+    left: 11em;
+    background: rgba(0, 0, 0,  0.15);
+    z-index: 3;
+}
+  
+.bottomSection{
     z-index: 3;
     .flex-display();
     .flex-direction(row);
@@ -1533,6 +1553,17 @@ span.valuePrefix{
       .flex-direction(row);
     }
   }
+.widgetContainer.center {
+    position: absolute;
+    bottom:0;
+    max-height: 100%;
+    z-index: 3;
+background: chartreuse;
+    left: 6em;
+    top: 7em;
+    height: 8em;
+    width: 8em;
+}
   .widgetContainer.left{
     position: absolute;
     bottom:0;

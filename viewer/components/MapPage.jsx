@@ -177,9 +177,23 @@ class MapPage extends React.Component{
                 id={self.props.id}
                 mainContent={
                             <React.Fragment>
+                            <div className="centerSection">
+                                <WidgetContainer
+                                    fontSize={self.props.widgetFontSize+"px"}
+									width='100%'
+									height='100%'
+									left= '8.8em'
+                                    panel="center"
+                                    mode="center"
+                                />
+                            </div>
+
                             <div className="leftSection">
                                 <WidgetContainer
                                     fontSize={self.props.widgetFontSize+"px"}
+									width='100%'
+									height='100%'
+
                                     panel="left"
                                     mode="vertical"
                                 />

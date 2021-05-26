@@ -1,7 +1,14 @@
-
 console.log("sailsteer plugin loaded");
 
+            let widgetParameters = {
+				formatterParameters: true,
+				sailsteerrefresh: {type: 'NUMBER', default: 5},
+            };
+
+var TWD_Abweichung = [0,0]
+var old_time=performance.now()
 var widget={
+
     name:"SailsteerWidget",
     /**
      * a function that will render the HTML content of the widget
@@ -11,6 +18,14 @@ var widget={
      * @param props
      * @returns {string}
      */
+
+	initFunction:function(a,b)
+	{
+		var t=0;
+	},
+
+
+/*
     renderHtml:function(props){
         /**
          * example for storing some instance data
@@ -18,16 +33,17 @@ var widget={
          * "this" points to the context object that represent the instance of the widget
          * initially it will only contain the eventHandler array and a triggerRedraw function
          * whenever the page will reload it will be emptied again!
-         */
+         *
         if (this.counter === undefined) this.counter=0;
         this.counter++;
         var dv=avnav.api.formatter.formatDirection(props.course);
         var replacements={
             course: props.course
         };
-        var template='<div class="widgetData">${course}</div>';
+        var template='<div class="widgetData">${course}</div>'
         return avnav.api.templateReplace(template,replacements);
     },
+*/
     /**
      * optional render some graphics to a canvas object
      * you should style the canvas dimensions in the plugin.css
@@ -43,19 +59,19 @@ var widget={
 	
 	
 	var angle=props.course
+	var radius=120
 	canvas.width = 400;
 	canvas.height = 400;
 
 	
-	var TWD_Abweichung = [-45,45]
-
-	props.DrawOuterRing(canvas, -angle);
-	props.DrawKompassring(canvas, -angle);
-	props.DrawLaylineArea(canvas, 99,TWD_Abweichung, "red")
-	props.DrawLaylineArea(canvas, 199,TWD_Abweichung, "rgb(0,255,0)")
-	props.DrawWindpfeilIcon(canvas,props.AWA, "rgb(0,255,0)", 'A')
-	props.DrawWindpfeilIcon(canvas,props.TWA, "blue", 'T')
-	props.DrawWindpfeilIcon(canvas,props.TSS-props.course, "yellow", '~')
+	props.calc_LaylineAreas(props)
+	props.DrawOuterRing(canvas, radius, -angle);
+	props.DrawKompassring(canvas, radius, -angle);
+	props.DrawLaylineArea(canvas, radius, props.LLBB-props.course,TWD_Abweichung, "red")
+	props.DrawLaylineArea(canvas, radius, props.LLSB-props.course,TWD_Abweichung, "rgb(0,255,0)")
+	props.DrawWindpfeilIcon(canvas,radius,props.AWA, "rgb(0,255,0)", 'A')
+	props.DrawWindpfeilIcon(canvas,radius,props.TWA, "blue", 'T')
+	props.DrawWindpfeilIcon(canvas,radius,props.TSS-props.course, "yellow", '~')
   },
     /**
      * the access to the internal store
@@ -63,62 +79,56 @@ var widget={
      * see as properties when your render functions are called
      * whenever one of the values in the store is changing, your render functions will be called
      */
+
+
+
+
     storeKeys:{
       course: 'nav.gps.course',
       myValue: 'nav.gps.test', //stored at the server side with gps.test
 		AWA:'nav.gps.AWA',
 		TWA:'nav.gps.TWA',
+		TWD:'nav.gps.TWD',
 		TSS:'nav.gps.TSS',
+		LLSB:'nav.gps.LLSB',
+		LLBB:'nav.gps.LLBB',
 
     },
     caption: "Sailsteer",
     unit: "",
 
-calc_LaylineAreas:function() {
 
-	this.dist_SB = this.dist_BB=globalStore.getData(keys.properties.sailsteerlength)
-	if (TRUE/*this.gps.waypoint.position*/) {
-		let is_BB = LatLon.intersection(new LatLon(this.gps.position.lat, this.gps.position.lon), this.gps.LLSB, new LatLon(this.gps.waypoint.position.lat, this.gps.waypoint.position.lon), this.gps.LLBB + 180)
-		let is_SB = LatLon.intersection(new LatLon(this.gps.position.lat, this.gps.position.lon), this.gps.LLBB, new LatLon(this.gps.waypoint.position.lat, this.gps.waypoint.position.lon), this.gps.LLSB + 180)
-		let WP_Point = new navobjects.Point(this.gps.waypoint.position.lon, this.gps.waypoint.position.lat)
-		this.WP_Map = this.mapholder.pointToMap(WP_Point.toCoord());
-
-		// Wende/Halse-Punkte berechnen
-		if (is_SB != null && is_BB != null) {
-			this.dist_SB = NavCompute.computeDistance(new navobjects.Point(is_SB._lon, is_SB._lat), WP_Point).dts
-			this.dist_BB = NavCompute.computeDistance(new navobjects.Point(is_BB._lon, is_BB._lat), WP_Point).dts
-		}
-	}
+calc_LaylineAreas:function(props) {
 
 // Berechnungen für die Laylineareas
 // Die Breite der Areas (Winkelbereich) wird über die Refreshzeit abgebaut
 
 
-	let reduktionszeit = globalStore.getData(keys.properties.sailsteerrefresh) * 60
-	let difftime = globalStore.getData(keys.properties.positionQueryTimeout) / 1000;
-
+	let reduktionszeit = props.sailsteerrefresh * 60
+	let difftime = (performance.now()-old_time)/1000;
+	old_time=performance.now()
 	let reduktionsfaktor = 1.
 	if (reduktionszeit)
 		reduktionsfaktor = 1 - difftime / reduktionszeit;
 
 	// MinMax Abweichungen über der Zeit reduzieren
 	for (var i = 0; i < 2; i++)
-		this.TWD_Abweichung[i] *= reduktionsfaktor;
+		TWD_Abweichung[i] *= reduktionsfaktor;
 
 	let winkelabweichung = 0;
-	winkelabweichung = this.gps.TWD - this.gps.TSS
-	winkelabweichung = winkelabweichung.mod(360)
+	winkelabweichung = props.TWD - props.TSS
+	winkelabweichung %=360
 	if (Math.abs(winkelabweichung) > 180)
 	winkelabweichung = winkelabweichung < -180 ? winkelabweichung % 180 + 180 : winkelabweichung
 	winkelabweichung = winkelabweichung > 180 ? winkelabweichung % 180 - 180 : winkelabweichung
 
-	this.TWD_Abweichung[0] = winkelabweichung < this.TWD_Abweichung[0] ? winkelabweichung : this.TWD_Abweichung[0];
-	this.TWD_Abweichung[1] = winkelabweichung > this.TWD_Abweichung[1] ? winkelabweichung : this.TWD_Abweichung[1];
+	TWD_Abweichung[0] = winkelabweichung < TWD_Abweichung[0] ? winkelabweichung : TWD_Abweichung[0];
+	TWD_Abweichung[1] = winkelabweichung > TWD_Abweichung[1] ? winkelabweichung : TWD_Abweichung[1];
 	//console.log("TWD_PT1: " + this.gps.TSS.toFixed(2) + " TWD " + this.TWD.toFixed(2) + " delta ", + winkelabweichung.toFixed(2) + " Abw: " + this.TWD_Abweichung[0].toFixed(2) + ":" + this.TWD_Abweichung[1].toFixed(2) + " DT " + this.deltat.toFixed(0))
 },
 
 
-DrawLaylineArea: function(canvas,angle,TWD_Abweichung, color) {
+DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
 /*
     if (opt_options && opt_options.fixX !== undefined) {
         center[0]=opt_options.fixX*this.devPixelRatio;
@@ -131,7 +141,7 @@ DrawLaylineArea: function(canvas,angle,TWD_Abweichung, color) {
 	var ctx = canvas.getContext('2d');
 	var x = canvas.width / 2;
 	var y = canvas.height / 2;
-	var radius = 0.45*Math.min(x,y)
+	var radius = 0.9*radius	//0.45*Math.min(x,y)
 
     ctx.save();
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -145,12 +155,14 @@ DrawLaylineArea: function(canvas,angle,TWD_Abweichung, color) {
 	ctx.closePath();
 	
 
-	ctx.lineWidth = 0.01*Math.min(x,y)
+	ctx.lineWidth = 0.02*Math.min(x,y)
 	ctx.fillStyle = color;
 	ctx.strokeStyle = color;
-	ctx.setLineDash([0.1*Math.min(x,y), 0.1*Math.min(x,y)]);
+	let dashes=radius/4
+	ctx.setLineDash([Math.floor(0.5*dashes), Math.floor(0.5*dashes)])	//0.1*Math.min(x,y), 0.1*Math.min(x,y)]);
 	ctx.stroke();
 
+	ctx.lineWidth = 0.01*Math.min(x,y)
 	// Areas	
 	ctx.globalAlpha *= 0.3;
 	ctx.beginPath();
@@ -168,14 +180,14 @@ DrawLaylineArea: function(canvas,angle,TWD_Abweichung, color) {
 
 
 
-DrawWindpfeilIcon:function(canvas,angle, color, Text) {
+DrawWindpfeilIcon:function(canvas, radius,angle, color, Text) {
 	if (!canvas) return undefined;
 	var ctx = canvas.getContext('2d');
 
 	var x = canvas.width / 2;
 	var y = canvas.height / 2;
-	var radius_kompassring = 0.525*Math.min(x,y);
-	var radius_outer_ring = radius = 0.65*Math.min(x,y);
+	var radius_kompassring = radius	//0.525*Math.min(x,y);
+	var radius_outer_ring = radius *1.3//= 0.65*Math.min(x,y);
 	var thickness = 0.1*Math.min(x,y)
 
 	ctx.restore();
@@ -207,15 +219,16 @@ DrawWindpfeilIcon:function(canvas,angle, color, Text) {
 
 
 
-DrawOuterRing:function(canvas,angle){
+DrawOuterRing:function(canvas,radius, angle){
 	if (!canvas) return undefined;
 
 	var ctx = canvas.getContext('2d');
 
 	var x = canvas.width / 2;
 	var y = canvas.height / 2;
-	var radius = 0.65*Math.min(x,y)
-	var thickness = 0.1*Math.min(x,y)
+	//var radius = 0.65*Math.min(x,y)
+	var thickness = 0.2*radius
+	radius*=1.25
 	ctx.restore();
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	var someColors = [];
@@ -287,14 +300,14 @@ DrawOuterRing:function(canvas,angle){
 	ctx.restore();
 }, //Ende OuterRing
 
-DrawKompassring:function(canvas,angle) {
+DrawKompassring:function(canvas,radius, angle) {
 	if (!canvas) return undefined;
 
 	var ctx = canvas.getContext('2d');
 	var x = canvas.width / 2;
 	var y = canvas.height / 2;
-	var radius = 0.525*Math.min(x,y)
-	var thickness = 0.1*Math.min(x,y)
+	//var radius = 0.525*Math.min(x,y)
+	var thickness = 0.2*radius//1*Math.min(x,y)
 	//var radius = 105;
 	ctx.restore();
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -330,9 +343,8 @@ DrawKompassring:function(canvas,angle) {
 	ctx.restore();
 } // Ende Kompassring
 
-
 };
-avnav.api.registerWidget(widget);
+avnav.api.registerWidget(widget, widgetParameters);
 
 /**
  * a widget that demonstrates how a widget from a plugin can interact with the python part

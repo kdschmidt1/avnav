@@ -1,4 +1,23 @@
-.SailsteerWidget .widgetData{
+.SailsteerWidget {
+  position: absolute;
+	background:transparent;
+	width: 30em;
+    height: 30em;
+}
+
+.mapPage .widgetContainer.center {
+ position: absolute;
+    bottom: 0;
+    max-height: 100%;
+    z-index: 3;
+    background: transparent;
+    left: 6em;
+    top: 7em;
+    height: 100%;
+    width: 100%;
+}
+
+.SailsteerWidget .centerSection .widgetData{
     font-size: 2.7em;
     background: #cfd8dc;
 }
