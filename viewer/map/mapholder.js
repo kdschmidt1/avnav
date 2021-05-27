@@ -295,6 +295,14 @@ const MapHolder=function(){
      * @type {number}
      */
     this.lastUserAction=0;
+    /**
+     * the boat position on the display in percent
+     * @type {{x: number, y: number}}
+     */
+    this.boatOffset={
+        x:50,
+        y:50
+    }
 };
 
 base.inherits(MapHolder,DrawingPositionConverter);
@@ -1113,13 +1121,33 @@ MapHolder.prototype.getGpsLock=function(){
 };
 
 MapHolder.prototype.getBoatOffset=function(){
-    let x=parseInt(globalStore.getData(keys.properties.mapBoatX,50));
-    if (x < 1 ) x=1;
-    if (x>99) x=99;
-    let y=parseInt(globalStore.getData(keys.properties.mapBoatY,50));
-    if (y < 1 ) y=1;
-    if (y>99) y=99;
-    return {x:x,y:y};
+    return this.boatOffset;
+}
+MapHolder.prototype.setBoatOffset=function(point){
+    if (! point){
+        this.boatOffset={
+            x:50,
+            y:50
+        }
+        return true;
+    }
+    let pix=this.olmap.getPixelFromCoordinate(this.pointToMap([point.lon,point.lat]));
+    let mapSize=this.olmap.getSize();
+    if (pix && mapSize && mapSize[0] > 0 && mapSize[1] > 0){
+        if (pix[0] < 0 || pix[0] > mapSize[0]) return;
+        if (pix[1] < 0 || pix[1] > mapSize[1]) return;
+        let x=pix[0]*100/mapSize[0];
+        if (x < 1 ) x=1;
+        if (x>99) x=99;
+        let y=pix[1]*100/mapSize[1];
+        if (y < 1 ) y=1;
+        if (y>99) y=99;
+        this.boatOffset={
+            x:x,
+            y:y
+        }
+        return true;
+    }
 }
 /**
  * called with updates from nav
@@ -1265,12 +1293,9 @@ MapHolder.prototype.setCenter=function(point,opt_noUserAction,opt_offset){
         this.getView().setCenter(coordinates);
     }
     else{
-        if (pixel != null && (opt_offset.x !== 50 || opt_offset.y !== 50)){
+        if (mapSize != null && (opt_offset.x !== 50 || opt_offset.y !== 50)){
             let tpixel=[mapSize[0]*opt_offset.x/100,mapSize[1]*opt_offset.y/100];
-            let tcoord=this.pixelToCoord(tpixel);
-            let center=this.getView().getCenter();
-            let fcoord=[coordinates[0]+tcoord[0]-center[0],coordinates[1]+tcoord[1]-center[1]]
-            this.getView().setCenter(fcoord);
+            this.getView().centerOn(coordinates,mapSize,tpixel);
         }
         else {
             this.getView().setCenter(coordinates);
@@ -1311,6 +1336,12 @@ MapHolder.prototype.pixelDistance=function(point1,point2){
  */
 MapHolder.prototype.setMapRotation=function(rotation){
     this.getView().setRotation(rotation==0?0:(360-rotation)*Math.PI/180);
+    if (this.gpsLocked){
+        let boat=globalStore.getData(keys.map.centerPosition);
+        if (boat) {
+            this.setCenter(boat,true,this.getBoatOffset());
+        }
+    }
 };
 
 MapHolder.prototype.moveCenterPercent=function(deltax,deltay){

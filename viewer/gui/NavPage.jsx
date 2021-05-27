@@ -28,6 +28,7 @@ import Dimmer from '../util/dimhandler.js';
 import FeatureInfoDialog from "../components/FeatureInfoDialog";
 import {TrackConvertDialog} from "../components/TrackInfoDialog";
 import FullScreen from '../components/Fullscreen';
+import DialogButton from "../components/DialogButton";
 
 const RouteHandler=NavHandler.getRoutingHandler();
 
@@ -71,6 +72,49 @@ const startWaypointDialog=(item,idx)=>{
     };
     OverlayDialog.dialog(RenderDialog);
 };
+
+const setBoatOffset=()=>{
+    if (! globalStore.getData(keys.nav.gps.valid)) return;
+    let pos=globalStore.getData(keys.nav.gps.position);
+    if (! pos) return;
+    let ok=MapHolder.setBoatOffset(pos);
+    return ok;
+}
+const showLockDialog=()=>{
+    const LockDialog=(props)=>{
+        return <div className={'LockDialog inner'}>
+            <h3 className="dialogTitle">{'Lock Boat'}</h3>
+            <div className={'dialogButtons'}>
+                <DialogButton
+                    name={'current'}
+                    onClick={()=>{
+                        props.closeCallback();
+                        if (!setBoatOffset()) return;
+                        MapHolder.setGpsLock(true);
+                    }}
+                >
+                    Current</DialogButton>
+                <DialogButton
+                    name={'center'}
+                    onClick={()=>{
+                        props.closeCallback();
+                        MapHolder.setBoatOffset();
+                        MapHolder.setGpsLock(true);
+                    }}
+                >
+                    Center
+                </DialogButton>
+                <DialogButton
+                    name={'cancel'}
+                    onClick={()=>props.closeCallback()}
+                >
+                    Cancel
+                </DialogButton>
+            </div>
+        </div>
+    }
+    OverlayDialog.dialog(LockDialog);
+}
 
 const setCenterToTarget=()=>{
     MapHolder.setGpsLock(false);
@@ -212,6 +256,9 @@ class NavPage extends React.Component{
                 navToWp(!activeRoute.hasActiveTarget())
             }
         },"page",["centerToTarget","navNext","toggleNav"])
+        if (globalStore.getData(keys.properties.mapLockMode) === 'center'){
+            MapHolder.setBoatOffset();
+        }
     }
     widgetClick(item,data,panel,invertEditDirection){
         if (EditWidgetDialog.createDialog(item,PAGENAME,panel,invertEditDirection)) return;
@@ -363,6 +410,19 @@ class NavPage extends React.Component{
                 },
                 onClick:()=>{
                     let old=globalStore.getData(keys.map.lockPosition);
+                    if (! old){
+                        let lockMode=globalStore.getData(keys.properties.mapLockMode,'center');
+                        if ( lockMode === 'ask'){
+                            showLockDialog();
+                            return;
+                        }
+                        if (lockMode === 'current'){
+                            if (! setBoatOffset()) return;
+                        }
+                        else{
+                            MapHolder.setBoatOffset();
+                        }
+                    }
                     MapHolder.setGpsLock(!old);
                 },
                 editDisable:true
@@ -419,6 +479,15 @@ class NavPage extends React.Component{
                 }
             },
             {
+                name:'GpsCenter',
+                onClick:()=>{
+                    MapHolder.centerToGps();
+
+                },
+                overflow: true,
+                editDisable: true
+            },
+            {
                 name: 'Night',
                 storeKeys: {
                     toggle: keys.properties.nightMode,
@@ -429,7 +498,6 @@ class NavPage extends React.Component{
                     mode = !mode;
                     globalStore.storeData(keys.properties.nightMode, mode);
                 },
-                editDisable: true,
                 overflow: true
             },
             Mob.mobDefinition,

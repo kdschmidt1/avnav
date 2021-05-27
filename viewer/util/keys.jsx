@@ -102,9 +102,9 @@ let keys={
             positionAverageOn:K,
             speedAverageOn: K,
             courseAverageOn: K,
-            windAngleAverageOn: K,
-            windSpeedAverageOn: K,
             depthBelowTransducer: V,
+            headingMag: V,
+            headingTrue: V,
             sequence: K, //will be incremented as last operation on each receive
             connectionLost: K,
             updatealarm: new D("update counter for alarms"),
@@ -281,8 +281,6 @@ let keys={
         chartQueryTimeout: new Property(30000, "ChartOverview (ms)", PropertyType.RANGE, [500, 200000, 100]), //5s in ms
         courseAverageInterval: new Property(0, "Course average", PropertyType.RANGE, [0, 20, 1]), //unit: query interval
         speedAverageInterval: new Property(0, "Speed average", PropertyType.RANGE, [0, 20, 1]), //unit: query interval
-        windSpeedAverageInterval: new Property(0, "WindSpeed average", PropertyType.RANGE, [0, 20, 1]), //unit: query interval
-        windAngleAverageInterval: new Property(0, "WindAngle average", PropertyType.RANGE, [0, 20, 1]), //unit: query interval
         positionAverageInterval: new Property(0, "Position average", PropertyType.RANGE, [0, 20, 1]), //unit: query interval
         bearingColor: new Property("#DDA01F", "Color", PropertyType.COLOR),
         bearingWidth: new Property(3, "Width", PropertyType.RANGE, [1, 10]),
@@ -300,6 +298,8 @@ let keys={
         navCircle2Radius: new Property(1000, "Circle 2 Radius(m)", PropertyType.RANGE, [0, 5000, 10]),
         navCircle3Radius: new Property(0, "Circle 3 Radius(m)", PropertyType.RANGE, [0, 10000, 10]),
         boatIconScale: new Property(1,"Boat Icon Scale",PropertyType.RANGE, [0.5,5,0.1]),
+        boatDirectionMode: new Property('cog','boat direction',PropertyType.LIST,['cog','hdt','hdm']),
+        boatDirectionVector: new Property(true,'add dashed vector for hdt/hdm',PropertyType.CHECKBOX),
         windScaleAngle: new Property(50, "red/green Angle Wind", PropertyType.RANGE, [5, 90, 1]),
         anchorWatchDefault: new Property(300, "AnchorWatch(m)", PropertyType.RANGE, [0, 1000, 1]),
         gpsXteMax: new Property(1, "XTE(nm)", PropertyType.RANGE, [0.1, 5, 0.1, 1]),
@@ -387,8 +387,13 @@ let keys={
         mapOnlineUpZoom: new Property(0,"zoom up lower layers for online sources",PropertyType.RANGE,[0,6]),
         mapScale: new Property(1,"scale the map display",PropertyType.RANGE,[0.3,5]),
         mapFloat: new Property(false,"float map behind buttons",PropertyType.CHECKBOX),
+        mapLockMode: new Property('center','lock boat mode',PropertyType.LIST,['center','current','ask']),
         mapBoatX: new Property(50,"boat position x(%)",PropertyType.RANGE,[1,99]),
         mapBoatY: new Property(50,"boat position y(%)",PropertyType.RANGE,[1,99]),
+        remoteChannelName: new Property('0','remote control channel',PropertyType.LIST,['0','1','2','3','4']),
+        remoteChannelRead: new Property(false,'read from remote channel',PropertyType.CHECKBOX),
+        remoteChannelWrite: new Property(false,'write to remote channel',PropertyType.CHECKBOX),
+        remoteGuardTime: new Property(2,'time(s) to switch read/write',PropertyType.RANGE,[1,10]),
 
         style: {
             buttonSize: new Property(50, "Button Size(px)", PropertyType.RANGE, [35, 100]),
