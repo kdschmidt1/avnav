@@ -1,8 +1,10 @@
 .SailsteerWidget {
-  position: absolute;
-	background:transparent;
-	width: 30em;
-    height: 30em;
+position: relative;
+    background: transparent;
+    width: 29em;
+    height: 29em;
+    top: -2em;
+    left: -2em;
 }
 
 .mapPage .widgetContainer.center {
@@ -11,20 +13,16 @@
     max-height: 100%;
     z-index: 3;
     background: transparent;
-    left: 6em;
+    left: 5em;
     top: 7em;
-    height: 100%;
-    width: 100%;
+    height: 25em;	/* hier wird die position festgelegt!! */
+    width: 26em;
 }
 
-.SailsteerWidget .centerSection .widgetData{
-    font-size: 2.7em;
-    background: #cfd8dc;
-}
 
 .SailsteerWidget canvas{
-    height: 96%;
-    width: 106%;
+    /*height: 96%;
+    width: 106%;*/
 }
 
 canvas.widgetData {

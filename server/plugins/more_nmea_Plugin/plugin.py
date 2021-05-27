@@ -508,7 +508,7 @@ class Plugin(object):
         if(len(darray[1]) > 0):rt['SensorHeading'] = float(darray[1] or '0') 
         if(len(darray[2]) > 0): 
             rt['MagDeviation'] = float(darray[2] or '0')  # --> Ablenkung
-            if(len(darray[2]) > 0):rt['MagDevDir'] = darray[3] or 'X'
+            if(len(darray[3]) > 0):rt['MagDevDir'] = darray[3] or 'X'
         if(len(darray[4]) > 0): 
             rt['MagVariation'] = float(darray[4] or '0')  # --> Missweisung
             if(len(darray[5]) > 0):rt['MagVarDir'] = darray[5] or 'X'
