@@ -28,6 +28,8 @@ import globalstore from "./globalstore";
 import keys from "./keys";
 import base from "../base";
 import PubSub from "PubSub";
+import androidEventHandler from "./androidEventHandler";
+import dimhandler from "./dimhandler";
 const PSTOPIC="remote.";
 export const COMMANDS={
     setPage:'CP', //str page
@@ -37,7 +39,8 @@ export const COMMANDS={
     setZoom: 'CZ', //float zoom
     lock: 'CL', //str true|false
     courseUp: 'CU', //str true|false
-    gpsNum: 'CN' //num number gpspage number
+    gpsNum: 'CN', //num number gpspage number
+    addOn: 'CA' //the add on number
 };
 class RemoteChannel{
     constructor(props) {
@@ -47,10 +50,38 @@ class RemoteChannel{
         this.pubsub=new PubSub();
         this.channel=globalstore.getData(keys.properties.remoteChannelName,'0');
         this.channelChanged=this.channelChanged.bind(this);
+        this.android=window.avnavAndroid;
+        if (this.android){
+            this.token=androidEventHandler.subscribe('remoteMessage',(ev)=>{
+                window.setTimeout(()=>{
+                    while (true) {
+                        let msg = this.android.readChannelMessage(this.websocket);
+                        if (msg) {
+                            this.onMessage(msg);
+                        }
+                        else{
+                            break;
+                        }
+                    }
+                },0);
+            })
+            this.closeToken=androidEventHandler.subscribe('channelClose',(ev)=>{
+               if (ev.id === this.websocket){
+                   this.close();
+               }
+            });
+        }
         this.id=0;
     }
     close(){
         if (this.websocket !== undefined){
+            if (this.android){
+                try{
+                    this.android.channelClose(this.websocket);
+                }catch (e){}
+                this.websocket=undefined;
+                return;
+            }
             try{
                 this.websocket.close();
             }catch (e){}
@@ -90,18 +121,24 @@ class RemoteChannel{
     onMessage(data){
         base.log("message",data);
         if (! globalstore.getData(keys.properties.remoteChannelRead,false)) return;
-        if (! globalstore.getDataLocal(keys.properties.connectedMode,false)) return;
+        if (! globalstore.getData(keys.properties.connectedMode,false)) return;
         let parts=data.split(/  */);
         if (parts.length < 2) return;
         if (! parts[0] in COMMANDS) return;
         data=data.replace(/^[^ ]* */,'');
         window.setTimeout(()=> {
+            dimhandler.trigger(); //get us out of dim mode
             this.pubsub.publish(PSTOPIC + parts[0], data);
         },0);
     }
     openWebSocket(){
         if (! globalstore.getData(keys.gui.capabilities.remoteChannel)) return;
         this.close();
+        if (this.android){
+            this.websocket=this.android.channelOpen("/remotechannels/"+this.channel);
+            if (this.websocket < 0) this.websocket=undefined;
+            return;
+        }
         this.id++;
         let connectionId=this.id;
         let url='ws://'+window.location.host+
@@ -146,10 +183,15 @@ class RemoteChannel{
     sendMessage(msg,param){
         if (! this.websocket) return;
         if (! globalstore.getData(keys.properties.remoteChannelWrite,false)) return;
-        if (! globalstore.getDataLocal(keys.properties.connectedMode,false)) return;
+        if (! globalstore.getData(keys.properties.connectedMode,false)) return;
         try {
             if (param !== undefined) msg+=" "+param;
-            this.websocket.send(msg);
+            if (this.android){
+                this.android.sendChannelMessage(this.websocket,msg);
+            }
+            else {
+                this.websocket.send(msg);
+            }
         }catch (e){
 
         }

@@ -418,6 +418,20 @@ class NavPage extends React.Component{
                     visible:keys.gui.capabilities.uploadOverlays
                 }
             },
+            {
+                name: 'Night',
+                storeKeys: {
+                    toggle: keys.properties.nightMode,
+                    visible: keys.properties.nightModeNavPage
+                },
+                onClick: ()=> {
+                    let mode = globalStore.getData(keys.properties.nightMode, false);
+                    mode = !mode;
+                    globalStore.storeData(keys.properties.nightMode, mode);
+                },
+                editDisable: true,
+                overflow: true
+            },
             Mob.mobDefinition,
             EditPageDialog.getButtonDef(PAGENAME,
                 MapPage.PANELS,
@@ -434,6 +448,10 @@ class NavPage extends React.Component{
     }
     render(){
         let self=this;
+        let autohide=undefined;
+        if (globalStore.getData(keys.properties.autoHideNavPage)){
+            autohide=globalStore.getData(keys.properties.hideButtonTime,30)*1000;
+        }
         return (
             <MapPage
                 className={self.props.className}
@@ -447,6 +465,8 @@ class NavPage extends React.Component{
                             className="overlayContainer"
                         />:null}
                 buttonList={self.getButtons()}
+                preventCenterDialog={(self.props.options||{}).remote}
+                autoHideButtons={autohide}
                 />
         );
     }

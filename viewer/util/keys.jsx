@@ -31,14 +31,16 @@ export const PropertyType={
  * @param opt_label
  * @param opt_type
  * @param opt_values either min,max,[step],[decimal] for range or a list of value:label for list
+ * @param opt_initial value to be set on first start
  * @constructor
  */
-export const Property=function(defaultv,opt_label,opt_type,opt_values){
+export const Property=function(defaultv,opt_label,opt_type,opt_values,opt_initial){
     this.defaultv=defaultv;
     this.label=opt_label;
     this.type=(opt_type !== undefined)?opt_type:PropertyType.RANGE;
     this.values=(opt_values !== undefined)?opt_values:[0,1000]; //assume range 0...1000
     this.canChange=opt_type !== undefined;
+    this.initialValue=opt_initial;
 };
 
 /**
@@ -165,8 +167,7 @@ let keys={
         courseUp: K,
         currentZoom:K,
         requiredZoom:K,
-        centerPosition:K,
-        lastClickTime: K
+        centerPosition:K
         },
     gui:{
         capabilities:{
@@ -182,7 +183,9 @@ let keys={
             uploadTracks: K,
             canConnect: K,
             config: K,
-            debugLevel: K
+            debugLevel: K,
+            log: K,
+            remoteChannel: K
         },
         global:{
             smallDisplay: K,
@@ -204,6 +207,7 @@ let keys={
             computedButtonHeight: K,
             computedButtonWidth: K,
             isFullScreen: K,
+            remoteChannelState:K,
 
         },
         gpspage:{
@@ -304,7 +308,7 @@ let keys={
         trackInterval: new Property(30, "Point Dist.(s)", PropertyType.RANGE, [5, 300]), //seconds
         initialTrackLength: new Property(24, "Length(h)", PropertyType.RANGE, [1, 48]), //in h
         aisQueryTimeout: new Property(5000, "AIS (ms)", PropertyType.RANGE, [1000, 10000, 10]), //ms
-        aisDistance: new Property(20, "AIS-Range(nm)", PropertyType.RANGE, [1, 100]), //distance for AIS query in nm
+        aisDistance: new Property(20, "AIS-Range(nm)", PropertyType.RANGE, [1, 1000]), //distance for AIS query in nm
         aisUseCourseVector: new Property(true, "AIS Use Course Vector", PropertyType.CHECKBOX),
         aisIconBorderWidth: new Property(3, "Border Width", PropertyType.RANGE, [0, 10]),
         aisIconScale: new Property(1,"Icon Scale",PropertyType.RANGE, [0.5,5,0.1]),
@@ -319,9 +323,9 @@ let keys={
         aisNormalImage: new Property(aisDefaultImage),
         aisNearestImage: new Property(aisNearestImage),
         aisWarningImage: new Property(aisWarningImage),
-        statusQueryTimeout: new Property(3000), //ms
-        networkTimeout: new Property(3000,"Network timeout(ms)",PropertyType.RANGE,[1000,10000,100]),
-        wpaQueryTimeout: new Property(4000), //ms
+        statusQueryTimeout: new Property(8000), //ms
+        networkTimeout: new Property(8000,"Network timeout(ms)",PropertyType.RANGE,[1000,20000,100]),
+        wpaQueryTimeout: new Property(10000), //ms
         centerDisplayTimeout: new Property(45000), //ms - auto hide measure display (0 - no auto hide)
         navUrl: new Property("/viewer/avnav_navi.php"),
         maxGpsErrors: new Property(3), //after that much invalid responses/timeouts the GPS is dead
@@ -352,7 +356,7 @@ let keys={
         nightChartFade: new Property(30, "NightChartDim(%)", PropertyType.RANGE, [1, 99]), //in %
         dimFade: new Property(0,"Dim Fade(%)",PropertyType.RANGE,[0,60]),
         showDimButton: new Property(true,"Show Dim Button",PropertyType.CHECKBOX),
-        baseFontSize: new Property(12, "Base Font(px)", PropertyType.RANGE, [8, 28]),
+        baseFontSize: new Property(14, "Base Font(px)", PropertyType.RANGE, [8, 28]),
         widgetFontSize: new Property(14, "Widget Base Font(px)", PropertyType.RANGE, [8, 28]),
         allowTwoWidgetRows: new Property(true, "2 widget rows", PropertyType.CHECKBOX),
         showClock: new Property(true, "show clock", PropertyType.CHECKBOX),
@@ -366,28 +370,26 @@ let keys={
         smallBreak: new Property(480, "portrait layout below (px)", PropertyType.RANGE, [200, 9999]),
         mapClickWorkaroundTime: new Property(300, "time to ignore events map click", PropertyType.RANGE, [0, 1000]),
         wpButtonTimeout: new Property(30,"time(s) for auto hiding wp buttons",PropertyType.RANGE,[2,3600]),
+        nightModeNavPage: new Property(true,"show night mode on navpage",PropertyType.CHECKBOX),
+        hideButtonTime: new Property(30,"time(s) to hide buttons on enabled pages",PropertyType.RANGE,[2,90]),
+        showButtonShade: new Property(true,"show shade when buttons hidden",PropertyType.CHECKBOX),
+        autoHideNavPage: new Property(false,"auto hide buttons on NavPage",PropertyType.CHECKBOX),
+        autoHideGpsPage: new Property(false,"auto hide buttons on Dashboard Pages",PropertyType.CHECKBOX),
         toastTimeout: new Property(15,"time(s) to display messages",PropertyType.RANGE,[2,3600]),
         layoutName: new Property("system.default","Layout name",PropertyType.LAYOUT),
         mobMinZoom: new Property(16,"minzoom for MOB",PropertyType.RANGE,[8,20]),
         buttonCols: new Property(false,"2 button columns",PropertyType.CHECKBOX),
-        cancelTop: new Property(false,"Back button top",PropertyType.CHECKBOX),
+        cancelTop: new Property(false,"Back button top",PropertyType.CHECKBOX,undefined,true),
         featureInfo: new Property(true,"Overlay Info on Click",PropertyType.CHECKBOX),
         emptyFeatureInfo: new Property(true,"Always Info on Chart Click",PropertyType.CHECKBOX),
         showFullScreen: new Property(true,"Show Fullscreen Button",PropertyType.CHECKBOX),
         mapUpZoom: new Property(4,"zoom up lower layers",PropertyType.RANGE,[0,6]),
         mapOnlineUpZoom: new Property(0,"zoom up lower layers for online sources",PropertyType.RANGE,[0,6]),
         mapScale: new Property(1,"scale the map display",PropertyType.RANGE,[0.3,5]),
+        mapFloat: new Property(false,"float map behind buttons",PropertyType.CHECKBOX),
+        mapBoatX: new Property(50,"boat position x(%)",PropertyType.RANGE,[1,99]),
+        mapBoatY: new Property(50,"boat position y(%)",PropertyType.RANGE,[1,99]),
 
-        sailsteerboot: new Property(0,"Anlieger (Laylines) vom Boot aus anzeigen",PropertyType.CHECKBOX),
-        sailsteermarke: new Property(0,"Anlieger (Laylines) vom Wegpunkt aus anzeigen",PropertyType.CHECKBOX),///*an und gibt den Zielkurs zum Erreichen der Markierung bzw. des Wegpunktes an*/
-        sailsteerrefresh: new Property(5,"Windreher Zeitraum [min] ",PropertyType.RANGE,[0,60]),
-        //sailsteertide: new Property(0,"Berechnet den Gezeiteneffekt für das Boot basierend auf den COG-Daten und überträgt das Ergebnis auf die Anlieger",PropertyType.CHECKBOX),
-		sailsteeroverlap: new Property(0,"Anlieger (Laylines) über den Wende/Halse-Punkt hinaus erweitern",PropertyType.CHECKBOX),
-        sailsteerlength: new Property(100,"Legt die Länge der Anlieger (Laylines) fest [m]",PropertyType.RANGE,[0,10000]),
-        //sailsteerlimits: new Property(2,"Legt die minimale und maximale Dauer der Wende/Halse fest [min]",PropertyType.RANGE,[0,30]),
-		sailsteertransparency: new Property(20,"Transparenz des Sailsteerdisplays [%]",PropertyType.RANGE,[0,100]),
-		//sailsteerPT1_frequenz: new Property(0.02,"Grenzfrequenz des TWD PT1 Filters [Hz]",PropertyType.RANGE,[0,10]),
-		
         style: {
             buttonSize: new Property(50, "Button Size(px)", PropertyType.RANGE, [35, 100]),
             aisWarningColor: new Property("#FA584A", "Warning", PropertyType.COLOR),
@@ -396,7 +398,7 @@ let keys={
             aisTrackingColor: new Property('#CAD5BE', "Tracking", PropertyType.COLOR),
             routeApproachingColor: new Property('#FA584A', "Approach", PropertyType.COLOR),
             widgetMargin: new Property(3, "Widget Margin(px)", PropertyType.RANGE, [1, 20]),
-            useHdpi: new Property(false,"Increase Fonts on High Res",PropertyType.CHECKBOX)
+            useHdpi: new Property(false,"Increase Fonts on High Res",PropertyType.CHECKBOX,undefined,true)
         }
 
     }

@@ -124,7 +124,7 @@ class MapPage extends React.Component{
                     setShown(chartEntry.url,INFO_TYPES.info);
                 }
             }
-            MapHolder.loadMap(this.refs.map).
+            MapHolder.loadMap(this.refs.map, this.props.preventCenterDialog).
                 then((result)=>{
                 }).
                 catch((error)=>{Toast(error)});
@@ -170,9 +170,12 @@ class MapPage extends React.Component{
         let mapOpacity=globalStore.getData(keys.properties.nightMode) ?
             globalStore.getData(keys.properties.nightChartFade, 100) / 100
             : 1;
+        let map=<div className="map" ref="map" style={{opacity:mapOpacity}}/>;
+        let className=self.props.className?self.props.className+" mapPage":"mapPage";
+        if (this.props.mapFloat) className+=" mapFloat";
         return (
             <Page
-                className={self.props.className?self.props.className+" mapPage":"mapPage"}
+                className={className}
                 style={self.props.style}
                 id={self.props.id}
                 mainContent={
@@ -202,29 +205,43 @@ class MapPage extends React.Component{
                                     panel="top"
                                     mode="horizontal"
                                 />
+                    <React.Fragment>
+                        <div className="leftSection">
+                            <WidgetContainer
+                                fontSize={self.props.widgetFontSize + "px"}
+                                panel="left"
+                                mode="vertical"
+                            />
+                            <WidgetContainer
+                                fontSize={self.props.widgetFontSize + "px"}
+                                panel="top"
+                                mode="horizontal"
+                            />
 
-                                <div className="map" ref="map" style={{opacity:mapOpacity}}/>
-                                {self.props.overlayContent?self.props.overlayContent:null}
-                            </div>
-                            <div className={"bottomSection" + (globalStore.getData(keys.properties.allowTwoWidgetRows)?" twoRows":"")}>
-                                <WidgetContainer
-                                    reverse={true}
-                                    fontSize={self.props.widgetFontSize+"px"}
-                                    panel='bottomLeft'
-                                    mode="horizontal"
-                                    />
-                                <WidgetContainer
-                                    fontSize={self.props.widgetFontSize+"px"}
-                                    panel="bottomRight"
-                                    mode="horizontal"
-                                    />
-                             </div>
-                            </React.Fragment>
-                        }
+                            {!this.props.mapFloat && map}
+                            {self.props.overlayContent ? self.props.overlayContent : null}
+                        </div>
+                        <div
+                            className={"bottomSection" + (globalStore.getData(keys.properties.allowTwoWidgetRows) ? " twoRows" : "")}>
+                            <WidgetContainer
+                                reverse={true}
+                                fontSize={self.props.widgetFontSize + "px"}
+                                panel='bottomLeft'
+                                mode="horizontal"
+                            />
+                            <WidgetContainer
+                                fontSize={self.props.widgetFontSize + "px"}
+                                panel="bottomRight"
+                                mode="horizontal"
+                            />
+                        </div>
+                    </React.Fragment>
+                }
                 buttonList={self.props.buttonList}
                 buttonWidthChanged={()=>{
                     mapholder.updateSize();
                 }}
+                autoHideButtons={self.props.autoHideButtons}
                 />
 
         );
@@ -240,7 +257,12 @@ MapPage.propertyTypes={
     mapEventCallback:   PropTypes.func,
     id:                 PropTypes.string,
     overlayContent:     PropTypes.any,               //overlay in the map container
-    mapLoadCallback:    PropTypes.func
+    mapLoadCallback:    PropTypes.func,
+    preventCenterDialog: PropTypes.bool,
+    autoHideButtons:    PropTypes.any,
+    widgetFontSize:     PropTypes.number,
+    mapFloat:           PropTypes.bool
+
 };
 
 export const overlayDialog=(opt_chartName,opt_updateCallback)=>{
@@ -279,7 +301,8 @@ export const overlayDialog=(opt_chartName,opt_updateCallback)=>{
 
 let DynamicPage=Dynamic(MapPage,{
     storeKeys:LayoutHandler.getStoreKeys({
-        widgetFontSize:keys.properties.widgetFontSize
+        widgetFontSize:keys.properties.widgetFontSize,
+        mapFloat: keys.properties.mapFloat
     })
 });
 DynamicPage.PANELS=['left','top','bottomLeft','bottomRight'];
