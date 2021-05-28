@@ -183,7 +183,7 @@ DisplayLayer.prototype.drawTargetSymbol = function(drawing, center, boatPosition
 */
 
 DisplayLayer.prototype.onPostCompose = function(center, drawing, devpixelRatio) {
-    if (! this.visible) return;
+    if (! globalStore.getData(keys.properties.layers.instrument)) return;
 	this.gps = globalStore.getMultiple(this.positionKeys);
 	this.devPixelRatio=devpixelRatio
 	let course = this.gps.course;

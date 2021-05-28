@@ -178,34 +178,27 @@ class MapPage extends React.Component{
                 className={className}
                 style={self.props.style}
                 id={self.props.id}
+                floatContent={this.props.mapFloat?map:undefined}
                 mainContent={
-                            <React.Fragment>
-                            <div className="centerSection">
-                                <WidgetContainer
-                                    fontSize={self.props.widgetFontSize+"px"}
-									width='100%'
-									height='100%'
-									left= '8.8em'
-                                    panel="center"
-                                    mode="center"
-                                />
-                            </div>
-
-                            <div className="leftSection">
-                                <WidgetContainer
-                                    fontSize={self.props.widgetFontSize+"px"}
-									width='100%'
-									height='100%'
-
-                                    panel="left"
-                                    mode="vertical"
-                                />
-                                 <WidgetContainer
-                                    fontSize={self.props.widgetFontSize+"px"}
-                                    panel="top"
-                                    mode="horizontal"
-                                />
                     <React.Fragment>
+                        <div className="centerSection">
+                            <WidgetContainer
+                                fontSize={self.props.widgetFontSize + "px"}
+								width='100%'
+								height='100%'
+								left= '8.8em'
+                                panel="center"
+                                mode="center"
+                            />
+                            <WidgetContainer
+                                fontSize={self.props.widgetFontSize + "px"}
+                                panel="top"
+                                mode="horizontal"
+                            />
+
+                            {!this.props.mapFloat && map}
+                            {self.props.overlayContent ? self.props.overlayContent : null}
+                        </div>
                         <div className="leftSection">
                             <WidgetContainer
                                 fontSize={self.props.widgetFontSize + "px"}
