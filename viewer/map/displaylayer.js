@@ -11,6 +11,9 @@ import keys from '../util/keys.jsx';
 import globalStore from '../util/globalstore.jsx';
 import assign from 'object-assign';
 
+var old_time=performance.now()//ms
+var ln0_1=Math.log(0.1)
+
 const StyleEntry = function(src, style) {
 	this.style = assign({}, style);
 	this.src = src;
@@ -90,7 +93,6 @@ this.Position= 0	//nav.gps.position,
 		this.symbolStyles.OuterRing = new StyleEntry(this.CreateOuterRingIcon(), this.displayStyle);
 		this.symbolStyles.WindA = new StyleEntry(this.createWindpfeilIcon("rgb(0,255,0)", 'A'), this.displayStyle);
 		this.symbolStyles.WindT = new StyleEntry(this.createWindpfeilIcon("blue", 'T'), this.displayStyle);
-		this.symbolStyles.WindA = new StyleEntry(this.createWindpfeilIcon("rgb(0,255,0)", 'A'), this.displayStyle);
 		this.symbolStyles.WindM = new StyleEntry(this.createWindpfeilIcon("yellow", '~'), this.displayStyle);
 		this.symbolStyles.LaylineBB = new StyleEntry(this.createLaylineIcon("red", this.TWD_Abweichung), this.displayStyle);
 		this.symbolStyles.LaylineSB = new StyleEntry(this.createLaylineIcon("rgb(0,255,0)", this.TWD_Abweichung), this.displayStyle);
@@ -128,6 +130,14 @@ DisplayLayer.prototype.drawTargetSymbol = function(drawing, center, boatPosition
 	this.calc_LaylineAreas(center)
 	for (var symbol in this.symbolStyles) 
 	{
+		if(symbol == "WindM")
+			{
+			let xxx=globalStore.getData(keys.properties.sailsteerTWDfilt)
+			 if(!globalStore.getData(keys.properties.sailsteerTWDfilt))	 
+				{
+				continue;
+				}
+			}
 		let style = assign({}, this.symbolStyles[symbol].style);
 		let scale = 1.0//KDSglobalStore.getData(keys.properties.aisIconScale,1);
 
@@ -591,10 +601,20 @@ DisplayLayer.prototype.calc_LaylineAreas = function(center) {
 
 // Berechnungen für die Laylineareas
 // Die Breite der Areas (Winkelbereich) wird über die Refreshzeit abgebaut
-
-
 	let reduktionszeit = globalStore.getData(keys.properties.sailsteerrefresh) * 60
-	let difftime = globalStore.getData(keys.properties.positionQueryTimeout) / 1000;
+
+	let jetzt=performance.now()//ms
+	let difftime = (jetzt-old_time)/1000 // sec
+	console.log(old_time+','+jetzt+'->'+difftime)
+	old_time=jetzt
+	
+//	let difftime = globalStore.getData(keys.properties.positionQueryTimeout) / 1000;
+
+	let k=ln0_1/reduktionszeit
+	for (var i = 0; i < 2; i++)
+		this.TWD_Abweichung[i] *= Math.exp(k*difftime)
+
+/*
 
 	let reduktionsfaktor = 1.
 	if (reduktionszeit)
@@ -603,7 +623,7 @@ DisplayLayer.prototype.calc_LaylineAreas = function(center) {
 	// MinMax Abweichungen über der Zeit reduzieren
 	for (var i = 0; i < 2; i++)
 		this.TWD_Abweichung[i] *= reduktionsfaktor;
-
+*/
 	let winkelabweichung = 0;
 	winkelabweichung = this.gps.TWD - this.gps.TSS
 	winkelabweichung = winkelabweichung.mod(360)

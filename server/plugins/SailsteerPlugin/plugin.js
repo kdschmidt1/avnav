@@ -7,6 +7,7 @@ console.log("sailsteer plugin loaded");
 
 var TWD_Abweichung = [0,0]
 var old_time=performance.now()
+var ln0_1=Math.log(0.1)
 var widget={
 
     name:"SailsteerWidget",
@@ -105,15 +106,14 @@ calc_LaylineAreas:function(props) {
 
 
 	let reduktionszeit = props.sailsteerrefresh * 60
-	let difftime = (performance.now()-old_time)/1000;
-	old_time=performance.now()
-	let reduktionsfaktor = 1.
-	if (reduktionszeit)
-		reduktionsfaktor = 1 - difftime / reduktionszeit;
 
-	// MinMax Abweichungen über der Zeit reduzieren
+	let difftime = (performance.now()-old_time)/1000 // sec
+	old_time=performance.now()
+
+	let k=ln0_1/reduktionszeit
 	for (var i = 0; i < 2; i++)
-		TWD_Abweichung[i] *= reduktionsfaktor;
+		TWD_Abweichung[i] *= Math.exp(k*difftime)
+
 
 	let winkelabweichung = 0;
 	winkelabweichung = props.TWD - props.TSS

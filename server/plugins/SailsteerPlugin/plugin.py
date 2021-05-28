@@ -325,8 +325,13 @@ def calc_Laylines(self,gpsdata):# // [grad]
         else:
             wendewinkel = linear((gpsdata['TWS'] / 0.514),self.polare['windspeedvector'],self.polare['ww_upwind']) * 2
 
-        LL_SB = (gpsdata['TWD'] + wendewinkel / 2) % 360
-        LL_BB = (gpsdata['TWD'] - wendewinkel / 2) % 360
+        #LL_SB = (gpsdata['TWD'] + wendewinkel / 2) % 360
+        #LL_BB = (gpsdata['TWD'] - wendewinkel / 2) % 360
+
+        LL_SB = (gpsdata['TSS'] + wendewinkel / 2) % 360
+        LL_BB = (gpsdata['TSS'] - wendewinkel / 2) % 360
+        
+        
         self.api.addData(self.PATHTLL_SB,LL_SB)
         self.api.addData(self.PATHTLL_BB,LL_BB)
 
