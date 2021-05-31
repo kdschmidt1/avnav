@@ -3,6 +3,7 @@ console.log("sailsteer plugin loaded");
             let widgetParameters = {
 				formatterParameters: true,
 				sailsteerrefresh: {type: 'NUMBER', default: 5},
+				sailsteerPT1frequenz: {type: 'NUMBER', default: 0.2},
             };
 
 var TWD_Abweichung = [0,0]
@@ -23,6 +24,7 @@ var widget={
 	initFunction:function(a,b)
 	{
 		var t=0;
+		
 	},
 
 
@@ -61,9 +63,33 @@ var widget={
 	
 	var angle=props.course
 	var radius=120
+	globalStore.getData(keys.properties.sailsteerrefresh)
 	canvas.width = 400;
 	canvas.height = 400;
-
+            fetch(AVNAV_BASE_URL+"/api/reset")
+                .then(function(data){
+                    return data.json();
+                })
+                .then(function(json)
+                {
+                    if (self.requestRunning==id) {
+                        //if this is the answer to the last running request - switch of
+                        //the request running - and redraw
+                        self.requestRunning=undefined;
+                        self.triggerRedraw();
+                    }
+                    //alert("STATUS:"+json.status);
+                })
+                .catch(function(error){
+                    if (self.requestRunning==id) {
+                        //if this is the answer to the last running request - switch of
+                        //the request running - and redraw
+                        self.requestRunning=undefined;
+                        self.triggerRedraw();
+                    }
+                    avnav.api.showToast("ERROR: "+error)}
+            );
+ 
 	
 	props.calc_LaylineAreas(props)
 	props.DrawOuterRing(canvas, radius, -angle);

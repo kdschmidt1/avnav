@@ -71,7 +71,7 @@ class Plugin(object):
       },
       {
         'name':'FILTER_NMEA_OUT',
-        'description': 'Filter  für auszugebende NMEA records',
+        'description': 'Filter  for transmitted NMEA records',
         'default': ""
       },
       ]
@@ -207,9 +207,11 @@ class Plugin(object):
               wmm_filename = os.path.join(os.path.dirname(__file__) + '/lib', self.getConfigValue('WMM_FILE'))
               gm = geomag.GeoMag(wmm_filename)
         except:
-          self.api.error(" WMM-File " + wmm_filename + 'nicht gefunden!')
+          self.api.error(" WMM-File " + wmm_filename + 'not found!')
       lastTime = time.time()
       gpsdata = {}
+      self.WindData = []
+
       computesVar = False
       computesWind = False
       try:

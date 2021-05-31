@@ -1,6 +1,7 @@
 #the following import is optional
 #it only allows "intelligent" IDEs (like PyCharm) to support you in using it
 from avnav_api import AVNApi
+from avnav_store import AVNStore
 import math
 import time
 import os
@@ -229,6 +230,8 @@ class Plugin(object):
     @param args: dictionary of query arguments
     @return:
     """
+    out=urllib.parse.parse_qs(url)
+    out2=urllib.parse.urlparse(url)
     if url == 'test':
       return {'status':'OK'}
     if url == 'reset':
@@ -397,7 +400,7 @@ def calcSailsteer(self, gpsdata):
         freq=1/t_abtast
         self.oldtime=time.time()
 # TODO: Grenzfrequenz sollte aus key vom Viewer oder der server.xml geladen werden
-        fgrenz=0.02 #lobalStore.getData(keys.properties.sailsteerPT1_frequenz)
+        fgrenz=0.02#self.api.getSingleValue('sailsteerPT1_frequenz')
         self.windAngleSailsteer['x']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['x'], KaW['x'] - KaB['x'])
         self.windAngleSailsteer['y']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['y'], KaW['y'] - KaB['y'])
       # zurück in Polaren Winkel

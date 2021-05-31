@@ -605,7 +605,6 @@ DisplayLayer.prototype.calc_LaylineAreas = function(center) {
 
 	let jetzt=performance.now()//ms
 	let difftime = (jetzt-old_time)/1000 // sec
-	console.log(old_time+','+jetzt+'->'+difftime)
 	old_time=jetzt
 	
 //	let difftime = globalStore.getData(keys.properties.positionQueryTimeout) / 1000;
