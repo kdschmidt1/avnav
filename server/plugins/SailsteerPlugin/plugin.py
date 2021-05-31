@@ -235,8 +235,8 @@ class Plugin(object):
     if url == 'test':
       return {'status':'OK'}
     if url == 'reset':
-      self.count=0
-      self.api.addData(self.PATH, self.count)
+      #self.count=0
+      #self.api.addData(self.PATH, self.count)
       return {'status': 'OK'}
     return {'status','unknown request'}
 
@@ -400,7 +400,7 @@ def calcSailsteer(self, gpsdata):
         freq=1/t_abtast
         self.oldtime=time.time()
 # TODO: Grenzfrequenz sollte aus key vom Viewer oder der server.xml geladen werden
-        fgrenz=0.02#self.api.getSingleValue('sailsteerPT1_frequenz')
+        fgrenz=0.2#self.api.getSingleValue('sailsteerPT1_frequenz')
         self.windAngleSailsteer['x']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['x'], KaW['x'] - KaB['x'])
         self.windAngleSailsteer['y']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['y'], KaW['y'] - KaB['y'])
       # zurück in Polaren Winkel

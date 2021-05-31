@@ -63,10 +63,10 @@ var widget={
 	
 	var angle=props.course
 	var radius=120
-	globalStore.getData(keys.properties.sailsteerrefresh)
+	//globalStore.getData(keys.properties.sailsteerrefresh)
 	canvas.width = 400;
 	canvas.height = 400;
-            fetch(AVNAV_BASE_URL+"/api/reset")
+/*            fetch(AVNAV_BASE_URL+"/api/reset")
                 .then(function(data){
                     return data.json();
                 })
@@ -89,6 +89,7 @@ var widget={
                     }
                     avnav.api.showToast("ERROR: "+error)}
             );
+*/
  
 	
 	props.calc_LaylineAreas(props)
