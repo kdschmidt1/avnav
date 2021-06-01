@@ -220,11 +220,14 @@ class Plugin(object):
     if ('dd' in appr.keys() and 'ds' in appr.keys()) :
         xpoint = self.destinationPoint(src, src['course'], appr['dd'] / 1000);
         rt['crosspoint'] = xpoint
-    if (not appr['tm']):
-        rt['tcpa']=0; #/better undefined
-        rt['cpa']=curdistance;
-        rt['front']=-1;
-        return rt;
+    try:
+        if (not appr['tm']):
+            rt['tcpa']=0; #/better undefined
+            rt['cpa']=curdistance;
+            rt['front']=-1;
+            return rt;
+    except:
+        self.api.error(" tm key error in appr=" + appr)
     cpasrc = self.destinationPoint(src,src['course'], appr['dms']/1000);
     cpadst = self.destinationPoint(dst,dst['course'], appr['dmd']/1000);
     rt['src']=cpasrc
