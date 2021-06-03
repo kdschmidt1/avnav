@@ -1,4 +1,3 @@
-
  # software includes geomag.py
 # by Christopher Weiss cmweiss@gmail.com
 # https://github.com/cmweiss/geomag
