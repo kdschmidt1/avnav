@@ -1,4 +1,6 @@
 eclipse.preferences.version=1
+encoding//bin/server/avnav_server.py=utf-8
+encoding//bin/server/handler/baseconfig.py=utf-8
 encoding//chartconvert/convert_nv.py=utf-8
 encoding//chartconvert/read_charts.py=utf-8
 encoding//server/avnav_nmea.py=utf-8
