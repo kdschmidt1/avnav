@@ -229,6 +229,9 @@ button{
   &.NavOverlays{
     .iconButton('layers-black.svg');
   }
+  &.Measure{
+    .iconButton('straighten.svg');
+  }
 
   &.ShowStatus {
     .iconButton('status.svg');
@@ -562,6 +565,9 @@ button{
   .EditRouteDialog &.empty{
     .dialogIconButton('delete_sweep.svg');
   }
+  .EditRouteDialog &.load{
+    .dialogIconButton('save.svg');
+  }
   .EditRouteDialog &.invert{
     .dialogIconButton('invertroute.svg');
   }
@@ -575,5 +581,10 @@ button{
   .LockDialog &.center{
     .dialogIconButton('center.svg')
   }
-
+  .AnchorWatchDialog &.center{
+    .dialogIconButton('center.svg')
+  }
+  .AnchorWatchDialog &.boat{
+    .dialogIconButton('boat.svg')
+  }
 }

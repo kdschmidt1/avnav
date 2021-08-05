@@ -40,7 +40,7 @@ const PAGENAME='navpage';
 
 
 const getPanelList=(panel)=>{
-    return LayoutHandler.getPanelData(PAGENAME,panel,LayoutHandler.getOptionValues([LayoutHandler.OPTIONS.SMALL]));
+    return LayoutHandler.getPanelData(PAGENAME,panel,LayoutHandler.getOptionValues([LayoutHandler.OPTIONS.SMALL,LayoutHandler.OPTIONS.ANCHOR]));
 };
 /**
  *
@@ -118,7 +118,12 @@ const showLockDialog=()=>{
 
 const setCenterToTarget=()=>{
     MapHolder.setGpsLock(false);
-    MapHolder.setCenter(activeRoute.hasRoute()?activeRoute.getPointAt():activeRoute.getCurrentTarget());
+    if (globalStore.getData(keys.nav.anchor.watchDistance) !== undefined){
+        MapHolder.setCenter(activeRoute.getCurrentFrom());
+    }
+    else {
+        MapHolder.setCenter(activeRoute.hasRoute() ? activeRoute.getPointAt() : activeRoute.getCurrentTarget());
+    }
 };
 
 const navNext=()=>{
@@ -159,6 +164,7 @@ class NavPage extends React.Component{
         };
         this.showWpButtons=this.showWpButtons.bind(this);
         this.widgetClick=this.widgetClick.bind(this);
+        globalStore.storeData(keys.map.measurePosition,undefined);
         this.waypointButtons=[
             anchorWatch(),
             {
@@ -179,26 +185,35 @@ class NavPage extends React.Component{
                         startWaypointDialog(activeRoute.getCurrentTarget());
                     }
                     this.showWpButtons(false);
-                }
+                },
+                storeKeys: {watchDistance:keys.nav.anchor.watchDistance},
+                updateFunction:(state)=>{
+                    return {visible:! (state.watchDistance !== undefined)}
+                },
+
             },
             {
                 name:'WpGoto',
-                storeKeys:activeRoute.getStoreKeys(),
+                storeKeys:activeRoute.getStoreKeys({watchDistance:keys.nav.anchor.watchDistance}),
                 updateFunction: (state)=> {
-                    return {visible: !StateHelper.selectedIsActiveTarget(state)}
+                    return {visible: !StateHelper.selectedIsActiveTarget(state) && ! (state.watchDistance !== undefined)}
                 },
                 onClick:()=>{
                     let selected=activeRoute.getPointAt();
                     this.showWpButtons(false);
                     if (selected) RouteHandler.wpOn(selected);
-                }
+                },
+
 
             },
             {
                 name:'NavNext',
-                storeKeys:activeRoute.getStoreKeys(),
+                storeKeys:activeRoute.getStoreKeys({watchDistance:keys.nav.anchor.watchDistance}),
                 updateFunction: (state)=> {
-                    return {visible:  StateHelper.selectedIsActiveTarget(state) &&  StateHelper.hasPointAtOffset(state,1)};
+                    return {visible:  StateHelper.selectedIsActiveTarget(state)
+                            &&  StateHelper.hasPointAtOffset(state,1)
+                            && ! (state.watchDistance !== undefined)
+                    };
                 },
                 onClick:()=>{
                     self.showWpButtons(false);
@@ -209,11 +224,11 @@ class NavPage extends React.Component{
             },
             {
                 name:'WpNext',
-                storeKeys:activeRoute.getStoreKeys(),
+                storeKeys:activeRoute.getStoreKeys({watchDistance:keys.nav.anchor.watchDistance}),
                 updateFunction: (state)=> {
                     return {
                         disabled:!StateHelper.hasPointAtOffset(state,1),
-                        visible: StateHelper.hasRoute(state)
+                        visible: StateHelper.hasRoute(state) && ! (state.watchDistance !== undefined)
                     };
                 },
                 onClick:()=>{
@@ -226,11 +241,11 @@ class NavPage extends React.Component{
             },
             {
                 name:'WpPrevious',
-                storeKeys:activeRoute.getStoreKeys(),
+                storeKeys:activeRoute.getStoreKeys({watchDistance:keys.nav.anchor.watchDistance}),
                 updateFunction: (state)=> {
                     return {
                         disabled:!StateHelper.hasPointAtOffset(state,-1),
-                        visible: StateHelper.hasRoute(state)
+                        visible: StateHelper.hasRoute(state) && ! (state.watchDistance !== undefined)
                     }
                 },
                 onClick:()=>{
@@ -279,7 +294,7 @@ class NavPage extends React.Component{
             MapHolder.checkAutoZoom(true);
             return;
         }
-        if (panel == 'bottomLeft'){
+        if (panel && panel.match(/^bottomLeft/)){
             activeRoute.setIndexToTarget();
             this.showWpButtons(true);
             return;
@@ -385,6 +400,7 @@ class NavPage extends React.Component{
         }
     }
     componentWillUnmount(){
+        globalStore.storeData(keys.map.measurePosition,undefined);
     }
     componentDidMount(){
         MapHolder.showEditingRoute(false);
@@ -500,10 +516,30 @@ class NavPage extends React.Component{
                 },
                 overflow: true
             },
+            {
+                name: 'Measure',
+                storeKeys: {
+                    toggle: keys.map.measurePosition,
+                    visible: keys.properties.showMeasure
+                },
+                overflow: true,
+                onClick: ()=>{
+                    let current=globalStore.getData(keys.map.measurePosition);
+                    if (current){
+                        globalStore.storeData(keys.map.measurePosition,undefined);
+                        MapHolder.triggerRender();
+                        return;
+                    }
+                    if (MapHolder.getGpsLock()) return;
+                    let center = globalStore.getData(keys.map.centerPosition);
+                    globalStore.storeData(keys.map.measurePosition,center);
+                    MapHolder.triggerRender();
+                }
+            },
             Mob.mobDefinition,
             EditPageDialog.getButtonDef(PAGENAME,
                 MapPage.PANELS,
-                [LayoutHandler.OPTIONS.SMALL]),
+                [LayoutHandler.OPTIONS.SMALL,LayoutHandler.OPTIONS.ANCHOR]),
             LayoutFinishedDialog.getButtonDef(),
             FullScreen.fullScreenDefinition,
             Dimmer.buttonDef(),
