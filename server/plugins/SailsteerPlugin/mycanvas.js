@@ -48,8 +48,7 @@ cY=canvasHeight/2;
            context.fillStyle = color;
            context.fill();
            context.lineWidth = 1;
-           context.strokeStyle       var canvas = document.createElement('canvas');
- = '#666666';
+           context.strokeStyle = '#666666';
            context.stroke();
            context.restore();
 
@@ -69,3 +68,4 @@ cY=canvasHeight/2;
 
        return canvas;
    };
+export {mycanvasFunction}

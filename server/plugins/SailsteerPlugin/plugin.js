@@ -1,5 +1,84 @@
 console.log("sailsteer plugin loaded");
 
+sailsteercanvas = {};
+/*
+var numPieCharts = 5, coordinates=[], data=[], colors=[];
+   var i, p;
+   for(i=0; i< numPieCharts; i++) {
+       coordinates.push([-180+360*Math.random(), -90+180*Math.random()]);
+       p = 100*Math.random();
+       data.push([p, 100-p]);
+       colors.push([
+           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), 
+           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6)]);
+   }
+*/
+ mycanvasXFunction = function(canvas, map, extent, resolution, pixelRatio, size, projection) {
+	//renderCanvas(canvas,props);
+       var context = canvas.getContext('2d');
+       var canvasWidth = size[0], canvasHeight = size[1];
+       canvas.setAttribute('width', canvasWidth);
+       canvas.setAttribute('height', canvasHeight);
+	sailsteercanvas = canvas;
+/*	
+
+       // Canvas extent is different than map extent, so compute delta between 
+       // left-top of map and canvas extent.
+       var mapExtent = map.getView().calculateExtent(map.getSize())
+       var canvasOrigin = map.getPixelFromCoordinate([extent[0], extent[3]]);
+       var mapOrigin = map.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+       var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
+
+       var radius = 50;
+
+       // Track the accumulated arcs drawn1
+       var totalArc = -90*Math.PI / 180;
+       var percentToRadians = 1 / 100*360 *Math.PI / 180;
+       var wedgeRadians;
+
+       function drawWedge(coordinate, percent, color) {
+
+           var point = [0,0]
+           var pixel = map.getPixelFromCoordinate(point);
+           var cX = pixel[0] + delta[0], cY = pixel[1] + delta[1];
+cX=canvasWidth/2;
+cY=canvasHeight/2;
+           // Compute size of the wedge in radians
+           wedgeRadians = percent * percentToRadians;
+b_fun=window.localStorage.getItem('kds');
+           // Draw
+           context.save();
+           context.beginPath();
+           context.moveTo(cX, cY);
+           context.arc(cX, cY, radius, totalArc, totalArc + wedgeRadians, false);
+           context.closePath();
+           context.fillStyle = color;
+           context.fill();
+           context.lineWidth = 1;
+           context.strokeStyle = '#666666';
+           context.stroke();
+           context.restore();
+
+           // Accumulate the size of wedges
+           totalArc += wedgeRadians;
+       }
+b_fun=window.localStorage.getItem('kds');
+       var drawPie = function(coordinate, data, colors) {
+           for(var i=0;i<data.length;i++){
+               drawWedge(coordinate, data[i],colors[i]);
+           }
+       }
+
+       for(var i=0; i<coordinates.length;i++){
+           drawPie(coordinates[i], data[i], colors[i]);
+       }
+
+*/  
+     return canvas;
+   };
+
+
+//       		window.localStorage.setItem('kds',mycanvasFunction)
             let widgetParameters = {
 				formatterParameters: true,
 				sailsteerrefresh: {type: 'NUMBER', default: 5},
@@ -60,12 +139,19 @@ var widget={
 		//this.symbolStyles.LaylineSB.style.rotation = this.gps.LLSB - this.gps.course;
 		//this.symbolStyles.LaylineBB.style.rotation = this.gps.LLBB - this.gps.course;
 	
-	
+	canvas=sailsteercanvas;
+	cc=canvas.getContext('2d');
+cc.save();
+cc.setTransform(1, 0, 0, 1, 0, 0);
+cc.clearRect(0, 0, canvas.width, canvas.height);
+cc.restore();
+//cc.globalAlpha=0.5;
+
 	var angle=props.course
 	var radius=120
 	//globalStore.getData(keys.properties.sailsteerrefresh)
-	canvas.width = 400;
-	canvas.height = 400;
+//	canvas.width = 400;
+//	canvas.height = 400;
 /*            fetch(AVNAV_BASE_URL+"/api/reset")
                 .then(function(data){
                     return data.json();
@@ -155,6 +241,7 @@ calc_LaylineAreas:function(props) {
 },
 
 
+
 DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
 /*
     if (opt_options && opt_options.fixX !== undefined) {
@@ -182,7 +269,7 @@ DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
 	ctx.closePath();
 	
 
-	ctx.lineWidth = 0.02*Math.min(x,y)
+	ctx.lineWidth = 5;//0.02*Math.min(x,y)
 	ctx.fillStyle = color;
 	ctx.strokeStyle = color;
 	let dashes=radius/4
@@ -198,9 +285,9 @@ DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
 	ctx.closePath();
 
 	ctx.fillStyle = color;
-	ctx.setLineDash([]);
+	//ctx.setLineDash([]);
 	ctx.fill()
-	ctx.stroke();
+	//ctx.stroke();
 	ctx.restore()
 },
 
@@ -215,7 +302,8 @@ DrawWindpfeilIcon:function(canvas, radius,angle, color, Text) {
 	var y = canvas.height / 2;
 	var radius_kompassring = radius	//0.525*Math.min(x,y);
 	var radius_outer_ring = radius *1.3//= 0.65*Math.min(x,y);
-	var thickness = 0.1*Math.min(x,y)
+	var thickness = 0.1*Math.min(400,400)
+	thickness = 25;
 
 	ctx.restore();
 	ctx.setTransform(1, 0, 0, 1, 0, 0);
