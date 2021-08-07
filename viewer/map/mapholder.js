@@ -38,6 +38,7 @@ import OverlayConfig from "./overlayconfig";
 import Helper from "../util/helper";
 import KmlChartSource from "./kmlchartsource";
 import GeoJsonChartSource from "./geojsonchartsource";
+import CanvasChartSource from "./canvaschartsource";
 import pepjsdispatcher from '@openlayers/pepjs/src/dispatcher';
 import pepjstouch from '@openlayers/pepjs/src/touch';
 import pepjsmouse from '@openlayers/pepjs/src/mouse';
@@ -538,6 +539,9 @@ MapHolder.prototype.createChartSource=function(description){
     }
     if (description.url.match(/\.geojson$/)){
         return new GeoJsonChartSource(this,description);
+    }
+    if (description.url.match(/\.ks$/)){
+        return new CanvasChartSource(this,description);
     }
     throw Error("unsupported overlay: "+description.url)
 

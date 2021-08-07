@@ -18,6 +18,7 @@ import keys from '../util/keys';
 import OverlayConfig, {getKeyFromOverlay,OVERLAY_ID} from '../map/overlayconfig';
 import DefaultGpxIcon from '../images/icons-new/DefaultGpxPoint.png'
 import {readFeatureInfoFromGeoJson} from "../map/geojsonchartsource";
+import {readFeatureInfoFromCanvas} from "../map/canvaschartsource";
 import featureFormatters from '../util/featureFormatter';
 
 const filterOverlayItem=(item,opt_itemInfo)=>{
@@ -49,7 +50,7 @@ const filterOverlayItem=(item,opt_itemInfo)=>{
     }
     return rt;
 };
-export const KNOWN_OVERLAY_EXTENSIONS=['gpx','kml','kmz','geojson'];
+export const KNOWN_OVERLAY_EXTENSIONS=['gpx','kml','kmz','geojson','ks'];
 const KNOWN_ICON_FILE_EXTENSIONS=['zip'];
 const TYPE_LIST=[
     {label: 'overlay', value: 'overlay'},
@@ -183,6 +184,9 @@ class OverlayItemDialog extends React.Component{
                     }
                     if (ext === 'geojson') {
                         featureInfo =readFeatureInfoFromGeoJson(data);
+                    }
+                    if (ext === 'ks') {
+                        featureInfo =readFeatureInfoFromCanvas(data);
                     }
                     if (! featureInfo.hasAny){
                         Toast(url+" is no valid overlay file");
