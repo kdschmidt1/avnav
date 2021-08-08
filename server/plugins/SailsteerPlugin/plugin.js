@@ -1,6 +1,7 @@
 console.log("sailsteer plugin loaded");
 
 sailsteercanvas = {};
+sailsteermapholder={}
 /*
 var numPieCharts = 5, coordinates=[], data=[], colors=[];
    var i, p;
@@ -13,13 +14,25 @@ var numPieCharts = 5, coordinates=[], data=[], colors=[];
            '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6)]);
    }
 */
- mycanvasXFunction = function(canvas, map, extent, resolution, pixelRatio, size, projection) {
+ mycanvasXFunction = function(canvas, mapholder, extent, resolution, pixelRatio, size, projection) {
 	//renderCanvas(canvas,props);
        var context = canvas.getContext('2d');
        var canvasWidth = size[0], canvasHeight = size[1];
        canvas.setAttribute('width', canvasWidth);
        canvas.setAttribute('height', canvasHeight);
 	sailsteercanvas = canvas;
+	sailsteermapholder=mapholder;
+/*
+sailsteermapholder.olmap.getView().targetCenter_
+
+point=[13.66272479995443,54.551984903306334]
+(2) [13.66272479995443, 54.551984903306334]
+p2=sailsteermapholder.transformToMap(point)
+(2) [1520927.567579558, 7275396.555923184]
+sailsteermapholder.olmap.getPixelFromCoordinate(p2)
+*/
+/*	
+
 /*	
 
        // Canvas extent is different than map extent, so compute delta between 
@@ -37,6 +50,10 @@ var numPieCharts = 5, coordinates=[], data=[], colors=[];
        var wedgeRadians;
 
        function drawWedge(coordinate, percent, color) {
+       var context = canvas.getContext('2d');
+       var canvasWidth = size[0], canvasHeight = size[1];
+       canvas.setAttribute('width', canvasWidth);
+       canvas.setAttribute('height', canvasHeight);
 
            var point = [0,0]
            var pixel = map.getPixelFromCoordinate(point);
@@ -140,6 +157,7 @@ var widget={
 		//this.symbolStyles.LaylineBB.style.rotation = this.gps.LLBB - this.gps.course;
 	
 	canvas=sailsteercanvas;
+	console.log(window.localStorage.getItem('avnav.center'));
 	cc=canvas.getContext('2d');
 cc.save();
 cc.setTransform(1, 0, 0, 1, 0, 0);

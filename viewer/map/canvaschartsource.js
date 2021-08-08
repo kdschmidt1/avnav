@@ -37,8 +37,11 @@ import ImageLayer from 'ol/layer/Image';
 import {Map as olMap,View as olView,
     Feature as olFeature,
     } from 'ol';
+import * as olTransform from 'ol/transform';
+import * as olProj from 'ol/proj';
 
 var map={};
+var mapholder={};
 let styleParam={
     lineWidth:3,
     lineColor: '#000000',
@@ -66,6 +69,7 @@ class CanvasChartSource extends ChartSourceBase{
         this.styleMap={};
 		this.map=mapholer.olmap;
 		map=mapholer.olmap;
+		mapholder=mapholer;
         this.styleFunction=this.styleFunction.bind(this);
 
         for (let k in styleParam) {
@@ -295,7 +299,23 @@ fileref.setAttribute("src", AVNAV_BASE_URL+"/historychart.js");
 
    var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
        var canvas = document.createElement('canvas');
-	//load();
-	mycanvasXFunction(canvas, map, extent, resolution, pixelRatio, size, projection);
+                var context = canvas.getContext('2d');
+                var canvasWidth = size[0], canvasHeight = size[1];
+                canvas.setAttribute('width', canvasWidth);
+                canvas.setAttribute('height', canvasHeight);
+console.log("width: "+canvasWidth+"   height: "+canvasHeight);
+
+                // Canvas extent is different than map extent, so compute delta between 
+                // left-top of map and canvas extent.
+                var mapExtent = map.getView().calculateExtent(map.getSize())
+console.log("mapExtent: "+mapExtent);
+                var canvasOrigin = map.getPixelFromCoordinate([extent[0], extent[3]]);
+console.log("canvasOrigin: "+canvasOrigin);
+                var mapOrigin = map.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+console.log("mapOrigin: "+mapOrigin);
+                var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
+console.log("delta: "+delta);
+
+	mycanvasXFunction(canvas, mapholder, extent, resolution, pixelRatio, size, projection);
        return canvas;
    };
