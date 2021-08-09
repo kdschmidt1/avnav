@@ -37,11 +37,13 @@ import ImageLayer from 'ol/layer/Image';
 import {Map as olMap,View as olView,
     Feature as olFeature,
     } from 'ol';
-import * as olTransform from 'ol/transform';
 import * as olProj from 'ol/proj';
+import {transform as oltransform} from 'ol/proj';
 
 var map={};
 var mapholder={};
+var canvasLayer;
+var LmycanvasFunction;
 let styleParam={
     lineWidth:3,
     lineColor: '#000000',
@@ -174,11 +176,14 @@ class CanvasChartSource extends ChartSourceBase{
             };
             if (this.chartEntry.minZoom !== undefined) layerOptions.minZoom=this.chartEntry.minZoom;
             if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
-            let canvasLayer = new ImageLayer(layerOptions);
+            canvasLayer = new ImageLayer(layerOptions);
+			load();
 /*
 let fileref=document.createElement('script');
 fileref.setAttribute("type","text/javascript");
 fileref.setAttribute("src", "/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js");
+document.head.appendChild(scriptElement);
+
 */
 
             resolve([canvasLayer]);
@@ -281,19 +286,12 @@ fileref.setAttribute("src", AVNAV_BASE_URL+"/historychart.js");
 
 
 }
-  var numPieCharts = 5, coordinates=[], data=[], colors=[];
-   var i, p;
-   for(i=0; i< numPieCharts; i++) {
-       coordinates.push([-180+360*Math.random(), -90+180*Math.random()]);
-       p = 100*Math.random();
-       data.push([p, 100-p]);
-       colors.push([
-           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), 
-           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6)]);
-   }
 
-  async function load() {
-    let mycanvasFunction = await import('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
+  async function load() { //https://javascript.info/modules-dynamic-imports
+    var mycanvasFunction = await import('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
+	LmycanvasFunction=mycanvasFunction;
+	//mycanvasFunction.mycanvasFunction();
+	let a=99;
   }
 
 
@@ -307,15 +305,21 @@ console.log("width: "+canvasWidth+"   height: "+canvasHeight);
 
                 // Canvas extent is different than map extent, so compute delta between 
                 // left-top of map and canvas extent.
-                var mapExtent = map.getView().calculateExtent(map.getSize())
+                var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
 console.log("mapExtent: "+mapExtent);
-                var canvasOrigin = map.getPixelFromCoordinate([extent[0], extent[3]]);
+                var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
 console.log("canvasOrigin: "+canvasOrigin);
-                var mapOrigin = map.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+                var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
 console.log("mapOrigin: "+mapOrigin);
                 var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
 console.log("delta: "+delta);
 
-	mycanvasXFunction(canvas, mapholder, extent, resolution, pixelRatio, size, projection);
+
+	let center=mapholder.olmap.getView().targetCenter_
+	let centerpixel=mapholder.coordToPixel(center)
+	centerpixel[0]+=delta[0]
+	centerpixel[1]+=delta[1]
+	let canvasextent={};
+	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection);
        return canvas;
    };

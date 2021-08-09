@@ -2,95 +2,31 @@ console.log("sailsteer plugin loaded");
 
 sailsteercanvas = {};
 sailsteermapholder={}
-/*
-var numPieCharts = 5, coordinates=[], data=[], colors=[];
-   var i, p;
-   for(i=0; i< numPieCharts; i++) {
-       coordinates.push([-180+360*Math.random(), -90+180*Math.random()]);
-       p = 100*Math.random();
-       data.push([p, 100-p]);
-       colors.push([
-           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6), 
-           '#'+(0x1000000+(Math.random())*0xffffff).toString(16).substr(1,6)]);
-   }
-*/
- mycanvasXFunction = function(canvas, mapholder, extent, resolution, pixelRatio, size, projection) {
-	//renderCanvas(canvas,props);
+sailsteerImageCanvasSource={};
+
+coordinatetocanvas=function(coordinate){
+	let ret=[0,0];		
+	let v2=sailsteermapholder.coordToPixel(sailsteermapholder.pointToMap(coordinate))
+	let mapExtent=sailsteermapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
+	let mapOrigin = sailsteermapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	let ce=sailsteerImageCanvasSource.canvas_.getExtent();
+	let canvasOrigin=sailsteermapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
+	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
+	ret[0]=v2[0]+delta[0]	
+	ret[1]=v2[1]+delta[1]
+	return ret;	
+	}
+
+ mycanvasXFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection) {
        var context = canvas.getContext('2d');
        var canvasWidth = size[0], canvasHeight = size[1];
        canvas.setAttribute('width', canvasWidth);
        canvas.setAttribute('height', canvasHeight);
 	sailsteercanvas = canvas;
 	sailsteermapholder=mapholder;
-/*
-sailsteermapholder.olmap.getView().targetCenter_
-
-point=[13.66272479995443,54.551984903306334]
-(2) [13.66272479995443, 54.551984903306334]
-p2=sailsteermapholder.transformToMap(point)
-(2) [1520927.567579558, 7275396.555923184]
-sailsteermapholder.olmap.getPixelFromCoordinate(p2)
-*/
-/*	
-
-/*	
-
-       // Canvas extent is different than map extent, so compute delta between 
-       // left-top of map and canvas extent.
-       var mapExtent = map.getView().calculateExtent(map.getSize())
-       var canvasOrigin = map.getPixelFromCoordinate([extent[0], extent[3]]);
-       var mapOrigin = map.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
-       var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
-
-       var radius = 50;
-
-       // Track the accumulated arcs drawn1
-       var totalArc = -90*Math.PI / 180;
-       var percentToRadians = 1 / 100*360 *Math.PI / 180;
-       var wedgeRadians;
-
-       function drawWedge(coordinate, percent, color) {
-       var context = canvas.getContext('2d');
-       var canvasWidth = size[0], canvasHeight = size[1];
-       canvas.setAttribute('width', canvasWidth);
-       canvas.setAttribute('height', canvasHeight);
-
-           var point = [0,0]
-           var pixel = map.getPixelFromCoordinate(point);
-           var cX = pixel[0] + delta[0], cY = pixel[1] + delta[1];
-cX=canvasWidth/2;
-cY=canvasHeight/2;
-           // Compute size of the wedge in radians
-           wedgeRadians = percent * percentToRadians;
-b_fun=window.localStorage.getItem('kds');
-           // Draw
-           context.save();
-           context.beginPath();
-           context.moveTo(cX, cY);
-           context.arc(cX, cY, radius, totalArc, totalArc + wedgeRadians, false);
-           context.closePath();
-           context.fillStyle = color;
-           context.fill();
-           context.lineWidth = 1;
-           context.strokeStyle = '#666666';
-           context.stroke();
-           context.restore();
-
-           // Accumulate the size of wedges
-           totalArc += wedgeRadians;
-       }
-b_fun=window.localStorage.getItem('kds');
-       var drawPie = function(coordinate, data, colors) {
-           for(var i=0;i<data.length;i++){
-               drawWedge(coordinate, data[i],colors[i]);
-           }
-       }
-
-       for(var i=0; i<coordinates.length;i++){
-           drawPie(coordinates[i], data[i], colors[i]);
-       }
-
-*/  
+	sailsteerImageCanvasSource=ImageCanvasSource;
+	canvasdelta = delta;
+	canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
      return canvas;
    };
 
@@ -123,26 +59,6 @@ var widget={
 		
 	},
 
-
-/*
-    renderHtml:function(props){
-        /**
-         * example for storing some instance data
-         * in this case a useless counter, that will increment on each update
-         * "this" points to the context object that represent the instance of the widget
-         * initially it will only contain the eventHandler array and a triggerRedraw function
-         * whenever the page will reload it will be emptied again!
-         *
-        if (this.counter === undefined) this.counter=0;
-        this.counter++;
-        var dv=avnav.api.formatter.formatDirection(props.course);
-        var replacements={
-            course: props.course
-        };
-        var template='<div class="widgetData">${course}</div>'
-        return avnav.api.templateReplace(template,replacements);
-    },
-*/
     /**
      * optional render some graphics to a canvas object
      * you should style the canvas dimensions in the plugin.css
@@ -151,59 +67,49 @@ var widget={
      * @param props - the properties you have provided here + the properties you
      *                defined with the storeKeys
      */
+
+
+
+
     renderCanvas:function(canvas,props){
-	
-		//this.symbolStyles.LaylineSB.style.rotation = this.gps.LLSB - this.gps.course;
-		//this.symbolStyles.LaylineBB.style.rotation = this.gps.LLBB - this.gps.course;
-	
 	canvas=sailsteercanvas;
 	console.log(window.localStorage.getItem('avnav.center'));
 	cc=canvas.getContext('2d');
-cc.save();
-cc.setTransform(1, 0, 0, 1, 0, 0);
-cc.clearRect(0, 0, canvas.width, canvas.height);
-cc.restore();
-//cc.globalAlpha=0.5;
+	cc.save();
+	cc.setTransform(1, 0, 0, 1, 0, 0);
+	cc.clearRect(0, 0, canvas.width, canvas.height);
+	center=sailsteermapholder.center;
+/*	let v1=sailsteermapholder.pointToMap(center)
+	let v2=sailsteermapholder.coordToPixel(v1)
+	let mapExtent=sailsteermapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
+	let mapOrigin = sailsteermapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	let ce=sailsteerImageCanvasSource.canvas_.getExtent();
+	canvasOrigin=sailsteermapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
+	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
+*/
+	let center_canvas_coordinates=coordinatetocanvas(center);
+//	let point=[v2[0]+delta[0], v2[1]+delta[1]];
+	cc.translate(center_canvas_coordinates[0], center_canvas_coordinates[1]); // Nullpunkt auf den center (in canvaskoordinaten) setzen
+
+
+
+//	cc.translate(point); // Nullpunkt auf den center (in canvaskoordinaten) setzen
 
 	var angle=props.course
 	var radius=120
 	//globalStore.getData(keys.properties.sailsteerrefresh)
-//	canvas.width = 400;
-//	canvas.height = 400;
-/*            fetch(AVNAV_BASE_URL+"/api/reset")
-                .then(function(data){
-                    return data.json();
-                })
-                .then(function(json)
-                {
-                    if (self.requestRunning==id) {
-                        //if this is the answer to the last running request - switch of
-                        //the request running - and redraw
-                        self.requestRunning=undefined;
-                        self.triggerRedraw();
-                    }
-                    //alert("STATUS:"+json.status);
-                })
-                .catch(function(error){
-                    if (self.requestRunning==id) {
-                        //if this is the answer to the last running request - switch of
-                        //the request running - and redraw
-                        self.requestRunning=undefined;
-                        self.triggerRedraw();
-                    }
-                    avnav.api.showToast("ERROR: "+error)}
-            );
-*/
- 
-	
+
 	props.calc_LaylineAreas(props)
 	props.DrawOuterRing(canvas, radius, -angle);
 	props.DrawKompassring(canvas, radius, -angle);
-	props.DrawLaylineArea(canvas, radius, props.LLBB-props.course,TWD_Abweichung, "red")
-	props.DrawLaylineArea(canvas, radius, props.LLSB-props.course,TWD_Abweichung, "rgb(0,255,0)")
-	props.DrawWindpfeilIcon(canvas,radius,props.AWA, "rgb(0,255,0)", 'A')
-	props.DrawWindpfeilIcon(canvas,radius,props.TWA, "blue", 'T')
-	props.DrawWindpfeilIcon(canvas,radius,props.TSS-props.course, "yellow", '~')
+	props.DrawLaylineArea(canvas, radius, props.LLBB,TWD_Abweichung, "red")
+	props.DrawLaylineArea(canvas, radius, props.LLSB,TWD_Abweichung, "rgb(0,255,0)")
+	props.DrawWindpfeilIcon(canvas,radius,props.AWA+props.course, "rgb(0,255,0)", 'A')
+	props.DrawWindpfeilIcon(canvas,radius,props.TWA+props.course, "blue", 'T')
+ //	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
+		props.DrawWindpfeilIcon(canvas,radius,props.TSS, "yellow", '~')
+cc.restore();
+
   },
     /**
      * the access to the internal store
@@ -211,10 +117,6 @@ cc.restore();
      * see as properties when your render functions are called
      * whenever one of the values in the store is changing, your render functions will be called
      */
-
-
-
-
     storeKeys:{
       course: 'nav.gps.course',
       myValue: 'nav.gps.test', //stored at the server side with gps.test
@@ -224,6 +126,8 @@ cc.restore();
 		TSS:'nav.gps.TSS',
 		LLSB:'nav.gps.LLSB',
 		LLBB:'nav.gps.LLBB',
+ //       centerPosition: keys.map.centerPosition,
+
 
     },
     caption: "Sailsteer",
@@ -269,15 +173,14 @@ DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
         center[1]=opt_options.fixY*this.devPixelRatio;
     }
 */
-
 	var ctx = canvas.getContext('2d');
-	var x = canvas.width / 2;
-	var y = canvas.height / 2;
+	ctx.save();
+
+	var x = 0;
+	var y = 0;
+
 	var radius = 0.9*radius	//0.45*Math.min(x,y)
 
-    ctx.save();
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
-	ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
 	ctx.rotate((angle / 180) * Math.PI)
 
 	// Laylines
@@ -315,17 +218,15 @@ DrawLaylineArea: function(canvas, radius, angle,TWD_Abweichung, color) {
 DrawWindpfeilIcon:function(canvas, radius,angle, color, Text) {
 	if (!canvas) return undefined;
 	var ctx = canvas.getContext('2d');
+	ctx.save();
 
-	var x = canvas.width / 2;
-	var y = canvas.height / 2;
+	var x = 0;
+	var y = 0;
 	var radius_kompassring = radius	//0.525*Math.min(x,y);
 	var radius_outer_ring = radius *1.3//= 0.65*Math.min(x,y);
 	var thickness = 0.1*Math.min(400,400)
 	thickness = 25;
 
-	ctx.restore();
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
-	ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
 	ctx.rotate((angle / 180) * Math.PI)
 
 	ctx.beginPath();
@@ -347,6 +248,8 @@ DrawWindpfeilIcon:function(canvas, radius,angle, color, Text) {
 	ctx.textAlign = "center";
 	ctx.font = "bold 20px Arial";
 	ctx.fillText(Text, 0, -radius_outer_ring);
+	ctx.restore();
+
 },
 
 
@@ -356,14 +259,14 @@ DrawOuterRing:function(canvas,radius, angle){
 	if (!canvas) return undefined;
 
 	var ctx = canvas.getContext('2d');
+	ctx.save();
 
-	var x = canvas.width / 2;
-	var y = canvas.height / 2;
-	//var radius = 0.65*Math.min(x,y)
+	var x = 0;
+	var y = 0;
+	ctx.rotate((-angle / 180) * Math.PI)
+
 	var thickness = 0.2*radius
 	radius*=1.25
-	ctx.restore();
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
 	var someColors = [];
 	someColors.push("#F00");
 	someColors.push("#000");
@@ -405,13 +308,8 @@ DrawOuterRing:function(canvas,radius, angle){
 			start += partLength;
 		}
 	}
-	ctx.restore();
-	ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
-	ctx.save();
 	for (var i = 0; i < 360; i += 10) {
-		//ctx.restore();
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
+		ctx.save();
 		ctx.rotate((i / 180) * Math.PI);
 		if (i % 30 == 0) {
 			ctx.beginPath(); // Start a new path
@@ -429,6 +327,7 @@ DrawOuterRing:function(canvas,radius, angle){
 			ctx.strokeStyle = "rgb(190,190,190)";
 			ctx.stroke();
 		}
+		ctx.restore();
 	}
 	ctx.restore();
 }, //Ende OuterRing
@@ -437,26 +336,18 @@ DrawKompassring:function(canvas,radius, angle) {
 	if (!canvas) return undefined;
 
 	var ctx = canvas.getContext('2d');
-	var x = canvas.width / 2;
-	var y = canvas.height / 2;
-	//var radius = 0.525*Math.min(x,y)
+	ctx.save();
+
+	var x = 0;
+	var y = 0;
 	var thickness = 0.2*radius//1*Math.min(x,y)
-	//var radius = 105;
-	ctx.restore();
-	ctx.setTransform(1, 0, 0, 1, 0, 0);
-	ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
-	ctx.rotate((angle / 180) * Math.PI)
 	ctx.beginPath();
 	ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
 	ctx.lineWidth = thickness;
 	ctx.strokeStyle = "rgb(255,255,255)";
 	ctx.stroke();
-	ctx.save();
 	for (var i = 0; i < 360; i += 10) {
-		//ctx.restore();
-		ctx.setTransform(1, 0, 0, 1, 0, 0);
-		ctx.translate(x, y); // Nullpunkt auf den Mittelpunkt des Canvas setzen
-		ctx.rotate((angle / 180) * Math.PI)
+		ctx.save();
 		ctx.rotate((i / 180) * Math.PI);
 		if (i % 30 == 0) {
 			ctx.fillStyle = "rgb(00,00,00)";
@@ -472,6 +363,7 @@ DrawKompassring:function(canvas,radius, angle) {
 			ctx.strokeStyle = "rgb(100,100,100)";
 			ctx.stroke();
 		}
+		ctx.restore();
 	}
 	ctx.restore();
 } // Ende Kompassring

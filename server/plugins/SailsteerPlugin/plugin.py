@@ -323,7 +323,7 @@ def calc_Laylines(self,gpsdata):# // [grad]
     
     if (self.Polare and 'TWA' in gpsdata):
         # LAYLINES
-        if (math.fabs(gpsdata['TWA']) > 90 and math.fabs(gpsdata['TWA']) < 270): 
+        if (math.fabs(gpsdata['TWA']) > 120 and math.fabs(gpsdata['TSS']) < 240): 
             wendewinkel = linear((gpsdata['TWS'] / 0.514),self.polare['windspeedvector'],self.polare['ww_downwind']) * 2
         else:
             wendewinkel = linear((gpsdata['TWS'] / 0.514),self.polare['windspeedvector'],self.polare['ww_upwind']) * 2
