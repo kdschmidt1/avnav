@@ -540,7 +540,7 @@ MapHolder.prototype.createChartSource=function(description){
     if (description.url.match(/\.geojson$/)){
         return new GeoJsonChartSource(this,description);
     }
-    if (description.url.match(/\.ks$/)){
+    if (description.url.match(/\.js$/)){
         return new CanvasChartSource(this,description);
     }
     throw Error("unsupported overlay: "+description.url)

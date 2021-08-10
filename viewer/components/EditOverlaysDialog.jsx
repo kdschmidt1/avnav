@@ -50,7 +50,7 @@ const filterOverlayItem=(item,opt_itemInfo)=>{
     }
     return rt;
 };
-export const KNOWN_OVERLAY_EXTENSIONS=['gpx','kml','kmz','geojson','ks'];
+export const KNOWN_OVERLAY_EXTENSIONS=['gpx','kml','kmz','geojson','js'];
 const KNOWN_ICON_FILE_EXTENSIONS=['zip'];
 const TYPE_LIST=[
     {label: 'overlay', value: 'overlay'},
@@ -185,7 +185,7 @@ class OverlayItemDialog extends React.Component{
                     if (ext === 'geojson') {
                         featureInfo =readFeatureInfoFromGeoJson(data);
                     }
-                    if (ext === 'ks') {
+                    if (ext === 'js') {
                         featureInfo =readFeatureInfoFromCanvas(data);
                     }
                     if (! featureInfo.hasAny){
