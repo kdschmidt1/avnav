@@ -40,6 +40,8 @@ import {Map as olMap,View as olView,
 import * as olProj from 'ol/proj';
 import {transform as oltransform} from 'ol/proj';
 
+var loadflag=400;
+
 var map={};
 var mapholder={};
 var canvasLayer;
@@ -158,6 +160,7 @@ class CanvasChartSource extends ChartSourceBase{
         return this.styles[feature.getGeometry().getType()];
     }
     prepareInternal() {
+		this.chartEntry.url="/overlays/mycanvas.js"
         let url = this.chartEntry.url;
         let self = this;
         return new Promise((resolve, reject)=> {
@@ -177,7 +180,7 @@ class CanvasChartSource extends ChartSourceBase{
             if (this.chartEntry.minZoom !== undefined) layerOptions.minZoom=this.chartEntry.minZoom;
             if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
             canvasLayer = new ImageLayer(layerOptions);
-			load();
+			ajaxload(url);//
 /*
 let fileref=document.createElement('script');
 fileref.setAttribute("type","text/javascript");
@@ -281,21 +284,23 @@ export const readFeatureInfoFromCanvas=(doc)=>{
     })
     rt.allowFormatter=true;
     return rt;let fileref=document.createElement('script');
-fileref.setAttribute("type","text/javascript");
-fileref.setAttribute("src", AVNAV_BASE_URL+"/historychart.js");
-
 
 }
 
-  async function load() { //https://javascript.info/modules-dynamic-imports
-    var mycanvasFunction = await import('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
+  var load=function(filename) { //https://javascript.info/modules-dynamic-imports
+    var mycanvasFunction = import(filename);//('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
 	LmycanvasFunction=mycanvasFunction;
+	 // wait 3 seconds
+  //await new Promise((resolve, reject) => setTimeout(resolve, 3000));
 	//mycanvasFunction.mycanvasFunction();
-	let a=99;
+	loadflag=200;
   }
 
 
    var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
+	if(loadflag!=200)
+		return(null);
+
        var canvas = document.createElement('canvas');
                 var context = canvas.getContext('2d');
                 var canvasWidth = size[0], canvasHeight = size[1];
@@ -323,3 +328,28 @@ console.log("delta: "+delta);
 	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection);
        return canvas;
    };
+
+
+function ajaxload(url)
+{
+    var ajax = new XMLHttpRequest();
+    ajax.open('GET', url, false);
+    ajax.onreadystatechange = function ()
+    {
+        var script = ajax.response || ajax.responseText;
+        if (ajax.readyState === 4)
+        {
+            switch(ajax.status)
+            {
+                case 200:
+                    eval.apply( window, [script] );
+                    console.log("library loaded: ", url);
+					loadflag=200;
+                    break;
+                default:
+                    console.log("ERROR: library not loaded: ", url);
+            }
+        }
+    };
+    ajax.send(null);
+}
