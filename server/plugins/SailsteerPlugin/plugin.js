@@ -4,6 +4,26 @@ sailsteercanvas = {};
 sailsteermapholder={}
 sailsteerImageCanvasSource={};
 
+/**
+ * @param {olCoordinate} point the position in map coordinates
+ */
+latloncoordinatetodevice=function(coordinate){
+	// to map coordinates
+	let pos=sailsteermapholder.transformToMap(coordinate)
+    //let rt=this.pointToCssPixel(point);->
+	pixel=sailsteermapholder.olmap.getPixelFromCoordinate(pos);
+	//pixelToDevice(rt); ->    
+	let mapExtent=sailsteermapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
+	let ce=sailsteerImageCanvasSource.canvas_.getExtent();
+	let mapOrigin = sailsteermapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	let canvasOrigin=sailsteermapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
+	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
+	let rt=[];
+	rt[0]=(pixel[0]+delta[0])*window.window.devicePixelRatio;
+	rt[1]=(pixel[1]+delta[1])*window.window.devicePixelRatio;
+	return(rt);
+	}
+	
 coordinatetocanvas=function(coordinate){
 	let ret=[0,0];		
 	let v2=sailsteermapholder.coordToPixel(sailsteermapholder.pointToMap(coordinate))
@@ -15,9 +35,21 @@ coordinatetocanvas=function(coordinate){
 	ret[0]=v2[0]+delta[0]	
 	ret[1]=v2[1]+delta[1]
 	return ret;	
+/*
+	// to map coordinates
+	let pos=sailsteermapholder.transformToMap(coordinate)
+    //let rt=this.pointToCssPixel(point);->
+	pixel=sailsteermapholder.olmap.getPixelFromCoordinate(pos);
+	//pixelToDevice(rt); ->    
+	rt[0]=pixel[0]*window.devPixelRatio;
+	rt[1]=pixel[1]*window.devPixelRatio;
+
+*/
++delta[1]
 	}
 
- mycanvasXFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection) {
+ /*
+mycanvasXFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection) {
        var context = canvas.getContext('2d');
        var canvasWidth = size[0], canvasHeight = size[1];
        canvas.setAttribute('width', canvasWidth);
@@ -29,7 +61,7 @@ coordinatetocanvas=function(coordinate){
 	canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
      return canvas;
    };
-
+*/
 
 //       		window.localStorage.setItem('kds',mycanvasFunction)
             let widgetParameters = {
@@ -59,6 +91,23 @@ var widget={
 		
 	},
 
+
+	drawcross:function(left,top,right,bottom, color)
+	{
+	cc.beginPath();
+	cc.moveTo(left, top);
+	cc.lineTo(right, bottom);
+	cc.moveTo(right, top);
+	cc.lineTo(left, bottom);
+	cc.stroke();	
+	cc.lineWidth = 5;//0.02*Math.min(x,y)
+	cc.fillStyle = color;
+	cc.strokeStyle = color;
+	cc.stroke();
+		
+	},
+
+
     /**
      * optional render some graphics to a canvas object
      * you should style the canvas dimensions in the plugin.css
@@ -72,24 +121,37 @@ var widget={
 
 
     renderCanvas:function(canvas,props){
+	sailsteerImageCanvasSource.refresh();
+	return;
 	canvas=sailsteercanvas;
 	console.log(window.localStorage.getItem('avnav.center'));
 	cc=canvas.getContext('2d');
 	cc.save();
 	cc.setTransform(1, 0, 0, 1, 0, 0);
 	cc.clearRect(0, 0, canvas.width, canvas.height);
+	//cc.rotate(sailsteermapholder.drawing.rotation)
+    canvasWidth=canvas.getAttribute('width');
+    canvasHeight=canvas.getAttribute('height');
+
+	props.drawcross(0,0,canvas.getAttribute('width'),canvas.getAttribute('height'), "red");
+	
 	center=sailsteermapholder.center;
 /*	let v1=sailsteermapholder.pointToMap(center)
-	let v2=sailsteermapholder.coordToPixel(v1)
+	let v2=sailsteermapholddraer.coordToPixel(v1)
 	let mapExtent=sailsteermapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
 	let mapOrigin = sailsteermapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
 	let ce=sailsteerImageCanvasSource.canvas_.getExtent();
 	canvasOrigin=sailsteermapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
 	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
 */
-	let center_canvas_coordinates=coordinatetocanvas(center);
+	let testcenter=coordinatetocanvas(center);
+	//cc.rotate(sailsteermapholder.drawing.rotation)
+	let center_canvas_coordinates=latloncoordinatetodevice(center);
+
 //	let point=[v2[0]+delta[0], v2[1]+delta[1]];
 	cc.translate(center_canvas_coordinates[0], center_canvas_coordinates[1]); // Nullpunkt auf den center (in canvaskoordinaten) setzen
+	cc.rotate(sailsteermapholder.drawing.rotation)
+
 
 
 

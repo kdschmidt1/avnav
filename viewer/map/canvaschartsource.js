@@ -22,7 +22,6 @@
  #
  ###############################################################################
  */
-
 import ChartSourceBase from './chartsourcebase.js';
 import {Style as olStyle, Stroke as olStroke, Circle as olCircle, Icon as olIcon, Fill as olFill} from 'ol/style';
 import {Vector as olVectorSource} from 'ol/source';
@@ -39,6 +38,9 @@ import {Map as olMap,View as olView,
     } from 'ol';
 import * as olProj from 'ol/proj';
 import {transform as oltransform} from 'ol/proj';
+import keys from '../util/keys.jsx';
+import globalStore from '../util/globalstore.jsx';
+
 
 var loadflag=400;
 
@@ -295,37 +297,37 @@ export const readFeatureInfoFromCanvas=(doc)=>{
 	//mycanvasFunction.mycanvasFunction();
 	loadflag=200;
   }
+var storeKeys={
+      course: 'nav.gps.course',
+      myValue: 'nav.gps.test', //stored at the server side with gps.test
+		AWA:'nav.gps.AWA',
+		TWA:'nav.gps.TWA',
+		TWD:'nav.gps.TWD',
+		TSS:'nav.gps.TSS',
+		LLSB:'nav.gps.LLSB',
+		LLBB:'nav.gps.LLBB',
+		}
 
 
    var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
 	if(loadflag!=200)
 		return(null);
+    let gps=globalStore.getMultiple(storeKeys);
 
        var canvas = document.createElement('canvas');
                 var context = canvas.getContext('2d');
                 var canvasWidth = size[0], canvasHeight = size[1];
                 canvas.setAttribute('width', canvasWidth);
                 canvas.setAttribute('height', canvasHeight);
-console.log("width: "+canvasWidth+"   height: "+canvasHeight);
-
                 // Canvas extent is different than map extent, so compute delta between 
                 // left-top of map and canvas extent.
                 var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
-console.log("mapExtent: "+mapExtent);
                 var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
-console.log("canvasOrigin: "+canvasOrigin);
                 var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
-console.log("mapOrigin: "+mapOrigin);
                 var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
-console.log("delta: "+delta);
 
 
-	let center=mapholder.olmap.getView().targetCenter_
-	let centerpixel=mapholder.coordToPixel(center)
-	centerpixel[0]+=delta[0]
-	centerpixel[1]+=delta[1]
-	let canvasextent={};
-	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection);
+	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection, gps);
        return canvas;
    };
 
@@ -353,3 +355,23 @@ function ajaxload(url)
     };
     ajax.send(null);
 }
+
+/**
+*
+* @param coordinate
+*        converts a map coordinate [lat,lon] into canvas coordinate based on default canvas coordinate system
+*		
+*	returns canvaspoint [x,y]
+*/
+function kdcoordinatetocanvas(coordinate){
+	let ret=[0,0];		
+	let v2=mapholder.coordToPixel(sailsteermapholder.pointToMap(coordinate))
+	let mapExtent=mapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
+	let mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	let ce=ImageCanvasSource.canvas_.getExtent();
+	let canvasOrigin=mapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
+	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
+	ret[0]=v2[0]+delta[0]	
+	ret[1]=v2[1]+delta[1]
+	return ret;	
+	}
