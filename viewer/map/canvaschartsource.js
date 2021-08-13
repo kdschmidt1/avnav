@@ -306,6 +306,7 @@ var storeKeys={
 		TSS:'nav.gps.TSS',
 		LLSB:'nav.gps.LLSB',
 		LLBB:'nav.gps.LLBB',
+		sailsteerrefresh:'properties.sailsteerrefresh'
 		}
 
 
