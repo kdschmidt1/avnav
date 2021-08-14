@@ -162,7 +162,7 @@ class CanvasChartSource extends ChartSourceBase{
         return this.styles[feature.getGeometry().getType()];
     }
     prepareInternal() {
-		this.chartEntry.url="/overlays/mycanvas.js"
+		//this.chartEntry.url="/overlays/mycanvas.js"
         let url = this.chartEntry.url;
         let self = this;
         return new Promise((resolve, reject)=> {
