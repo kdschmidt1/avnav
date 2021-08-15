@@ -162,7 +162,6 @@ class CanvasChartSource extends ChartSourceBase{
         return this.styles[feature.getGeometry().getType()];
     }
     prepareInternal() {
-		//this.chartEntry.url="/overlays/mycanvas.js"
         let url = this.chartEntry.url;
         let self = this;
         return new Promise((resolve, reject)=> {
@@ -183,14 +182,6 @@ class CanvasChartSource extends ChartSourceBase{
             if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
             canvasLayer = new ImageLayer(layerOptions);
 			ajaxload(url);//
-/*
-let fileref=document.createElement('script');
-fileref.setAttribute("type","text/javascript");
-fileref.setAttribute("src", "/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js");
-document.head.appendChild(scriptElement);
-
-*/
-
             resolve([canvasLayer]);
 
         });
@@ -285,7 +276,7 @@ export const readFeatureInfoFromCanvas=(doc)=>{
         }
     })
     rt.allowFormatter=true;
-    return rt;let fileref=document.createElement('script');
+    return rt;
 
 }
 
@@ -306,7 +297,14 @@ var storeKeys={
 		TSS:'nav.gps.TSS',
 		LLSB:'nav.gps.LLSB',
 		LLBB:'nav.gps.LLBB',
-		sailsteerrefresh:'properties.sailsteerrefresh'
+		valid:'nav.gps.valid',
+		boatposition: 'nav.gps.position',
+		WPposition:'nav.wp.position',
+		sailsteerrefresh:'properties.sailsteerrefresh',
+        sailsteeroverlap: 'properties.sailsteeroverlap',
+		sailsteerlength:'properties.sailsteerlength',
+		sailsteerboot: 'properties.sailsteerboot',
+		
 		}
 
 
@@ -357,22 +355,3 @@ function ajaxload(url)
     ajax.send(null);
 }
 
-/**
-*
-* @param coordinate
-*        converts a map coordinate [lat,lon] into canvas coordinate based on default canvas coordinate system
-*		
-*	returns canvaspoint [x,y]
-*/
-function kdcoordinatetocanvas(coordinate){
-	let ret=[0,0];		
-	let v2=mapholder.coordToPixel(sailsteermapholder.pointToMap(coordinate))
-	let mapExtent=mapholder.olmap.getView().calculateExtent(sailsteermapholder.olmap.getSize())
-	let mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
-	let ce=ImageCanvasSource.canvas_.getExtent();
-	let canvasOrigin=mapholder.olmap.getPixelFromCoordinate([ce[0], ce[3]]);
-	let delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]
-	ret[0]=v2[0]+delta[0]	
-	ret[1]=v2[1]+delta[1]
-	return ret;	
-	}

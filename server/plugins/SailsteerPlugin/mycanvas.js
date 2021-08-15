@@ -85,68 +85,160 @@ document.getElementsByTagName("headsailsteermapholder")[0].appendChild(fileref)
 */
 var first=true;
 
-renderCanvas=function(canvas,center, props){
-	cc=canvas.getContext('2d');
+toCoord=function(a){
+    let rt=[a.longitude,a.latitude];
+    return rt;
+};
+
+
+
+
+
+renderCanvas = function(canvas, center, props) {
+	load();
+	let coordinate=[];
+	coordinate[0]=props.boatposition.longitude;
+	coordinate[1]=props.boatposition.latitude;
+	boatPosition = sailsteermapholder.transformToMap(coordinate);
+
+	cc = canvas.getContext('2d');
 	cc.save();
 	cc.setTransform(1, 0, 0, 1, 0, 0);
 	cc.clearRect(0, 0, canvas.width, canvas.height);
 	//cc.rotate(sailsteermapholder.drawing.rotation)
-    canvasWidth=canvas.getAttribute('width');
-    canvasHeight=canvas.getAttribute('height');
-	
+	canvasWidth = canvas.getAttribute('width');
+	canvasHeight = canvas.getAttribute('height');
 
-	let center_canvas_coordinates=latloncoordinatetodevice(center);
-	center_canvas_coordinates=[canvas.width/2,canvas.height/2];
-	first=false;
+
+	let center_canvas_coordinates = latloncoordinatetodevice(center);
+	//center_canvas_coordinates = [canvas.width / 2, canvas.height / 2];
+	first = false;
 
 	cc.translate(center_canvas_coordinates[0], center_canvas_coordinates[1]); // Nullpunkt auf den center (in canvaskoordinaten) setzen
 	cc.rotate(sailsteermapholder.drawing.rotation)
 
-	var angle=props.course
-	var radius=120;
+	var angle = props.course
+	var radius = 120;
 
 	calc_LaylineAreas(props)
 	DrawOuterRing(canvas, radius, -angle);
 	DrawKompassring(canvas, radius, -angle);
-	DrawLaylineArea(canvas, radius, props.LLBB,TWD_Abweichung, "red")
-	DrawLaylineArea(canvas, radius, props.LLSB,TWD_Abweichung, "rgb(0,255,0)")
-	DrawWindpfeilIcon(canvas,radius,props.AWA+props.course, "rgb(0,255,0)", 'A')
-	DrawWindpfeilIcon(canvas,radius,props.TWA+props.course, "blue", 'T')
- //	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
-	DrawWindpfeilIcon(canvas,radius,props.TSS, "yellow", '~')
-cc.restore();
+	DrawLaylineArea(canvas, radius, props.LLBB, TWD_Abweichung, "red")
+	DrawLaylineArea(canvas, radius, props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
+	DrawWindpfeilIcon(canvas, radius, props.AWA + props.course, "rgb(0,255,0)", 'A')
+	DrawWindpfeilIcon(canvas, radius, props.TWA + props.course, "blue", 'T')
+	//	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
+	DrawWindpfeilIcon(canvas, radius, props.TSS, "yellow", '~')
 
-  },
+	//Laylines vom Boot zeichnen BB
+	let draw_distance = props.sailsteeroverlap ? props.sailsteerlength : Math.min(this.dist_BB, props.sailsteerlength);
+/*	let targetboat = this.computeTarget(props.LLBB * 180 / Math.PI, draw_distance)
+	if (props.sailsteerboot) // laylinbes vom boot aus zeichnen
+		drawing.drawLineToContext([boatPosition, targetboat], { color: "red", width: 5, dashed: true });
+*/
 
-calc_LaylineAreas=function(props) {
 
-// Berechnungen für die Laylineareas
-// Die Breite der Areas (Winkelbereich) wird über die Refreshzeit abgebaut
+	cc.restore();
+	//cc.setTransform(1, 0, 0, 1, 0, 0);
+
+	DrawMapLaylines(canvas) 
+
+
+};
+
+
+
+calc_LaylineAreas = function(props) {
+
+	this.dist_SB = this.dist_BB = props.sailsteerlength
+	b_pos = new LatLon(props.boatposition.lat, props.boatposition.lon);
+	if (props.WPposition) {
+		WP_pos = new LatLon(props.WPposition.lat, props.WPposition.lon);
+
+		// Schnittpunkte berechnen
+		let is_SB = LatLon.intersection(b_pos, props.LLSB, WP_pos, props.LLBB + 180)
+		let is_BB = LatLon.intersection(b_pos, props.LLBB, WP_pos, props.LLSB + 180)
+		let dist_BB = b_pos.distanceTo(is_BB);
+		let dist_SB = b_pos.distanceTo(is_SB);
+
+
+		this.ep_BB_boat = is_BB; // wenn abstand zu gross, endpunkte der LL berechnen
+		this.ep_BB_WP = is_BB;
+		this.ep_SB_boat = is_SB;
+		this.ep_SB_WP = is_SB;
+
+		this.MapLayline = { Boat: { SB: { P1: b_pos, P2: is_SB, color: 'rgb(0,255,0)' }, BB: { P1: b_pos, P2: is_BB, color: 'red' } }, WP: { SB: { P1: WP_pos, P2: is_SB, color: 'red' }, BB: { P1: WP_pos, P2: is_BB, color: 'rgb(0,255,0)' } } }
+		this.ep_BB_boat = is_BB; // wenn abstand zu gross, endpunkte der LL berechnen
+
+	}
+
+
+
+	// Berechnungen für die Laylineareas
+	// Die Breite der Areas (Winkelbereich) wird über die Refreshzeit abgebaut
 
 
 	let reduktionszeit = props.sailsteerrefresh * 60
 
-	let difftime = (performance.now()-old_time)/1000 // sec
-	old_time=performance.now()
+	let difftime = (performance.now() - old_time) / 1000 // sec
+	old_time = performance.now()
 
-	let k=ln0_1/reduktionszeit
+	let k = ln0_1 / reduktionszeit
 	for (var i = 0; i < 2; i++)
-		TWD_Abweichung[i] *= Math.exp(k*difftime)
+		TWD_Abweichung[i] *= Math.exp(k * difftime)
 
 
 	let winkelabweichung = 0;
 	winkelabweichung = props.TWD - props.TSS
-	winkelabweichung %=360
+	winkelabweichung %= 360
 	if (Math.abs(winkelabweichung) > 180)
-	winkelabweichung = winkelabweichung < -180 ? winkelabweichung % 180 + 180 : winkelabweichung
+		winkelabweichung = winkelabweichung < -180 ? winkelabweichung % 180 + 180 : winkelabweichung
 	winkelabweichung = winkelabweichung > 180 ? winkelabweichung % 180 - 180 : winkelabweichung
 
 	TWD_Abweichung[0] = winkelabweichung < TWD_Abweichung[0] ? winkelabweichung : TWD_Abweichung[0];
 	TWD_Abweichung[1] = winkelabweichung > TWD_Abweichung[1] ? winkelabweichung : TWD_Abweichung[1];
 	//console.log("TWD_PT1: " + this.gps.TSS.toFixed(2) + " TWD " + this.TWD.toFixed(2) + " delta ", + winkelabweichung.toFixed(2) + " Abw: " + this.TWD_Abweichung[0].toFixed(2) + ":" + this.TWD_Abweichung[1].toFixed(2) + " DT " + this.deltat.toFixed(0))
-},
+};
 
 
+DrawMapLaylines=function(canvas) 
+	{
+	DrawLine=function(p1,p2,color)
+	{	ctx.beginPath();
+	ctx.moveTo(p1[0],p1[1]);   // Move pen to center
+	ctx.lineTo(p2[0],p2[1]);
+	ctx.closePath();
+	
+
+	ctx.lineWidth = 5;//0.02*Math.min(x,y)
+	ctx.fillStyle = color
+	ctx.strokeStyle = color;// !!!
+	ctx.stroke();
+} 
+	var ctx = canvas.getContext('2d');
+	ctx.save();
+// Layline vom Boot:
+// BB
+p1=latloncoordinatetodevice([this.MapLayline.Boat.BB.P1._lon,this.MapLayline.Boat.BB.P1._lat]);
+p2=latloncoordinatetodevice([this.MapLayline.Boat.BB.P2._lon,this.MapLayline.Boat.BB.P2._lat]);
+	this.DrawLine(p1,p2,this.MapLayline.Boat.BB.color);
+// SB
+p1=latloncoordinatetodevice([this.MapLayline.Boat.SB.P1._lon,this.MapLayline.Boat.SB.P1._lat]);
+p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
+	this.DrawLine(p1,p2,this.MapLayline.Boat.SB.color);
+	ctx.restore()
+// Layline vom Wegpunkt:
+// BB
+p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
+p2=latloncoordinatetodevice([this.MapLayline.WP.BB.P2._lon,this.MapLayline.WP.BB.P2._lat]);
+	this.DrawLine(p1,p2,this.MapLayline.WP.BB.color);
+// SB
+p1=latloncoordinatetodevice([this.MapLayline.WP.SB.P1._lon,this.MapLayline.WP.SB.P1._lat]);
+p2=latloncoordinatetodevice([this.MapLayline.WP.SB.P2._lon,this.MapLayline.WP.SB.P2._lat]);
+	this.DrawLine(p1,p2,this.MapLayline.WP.SB.color);
+	ctx.restore()
+
+	}
 
 DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
 /*
@@ -347,3 +439,9 @@ DrawKompassring=function(canvas,radius, angle) {
 	}
 	ctx.restore();
 } // Ende Kompassring
+
+
+let modulePath = "/viewer/libraries/latlon.js";
+async function load() {
+    let latlon = await import(modulePath);
+  }
