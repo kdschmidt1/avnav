@@ -171,7 +171,7 @@ class CanvasChartSource extends ChartSourceBase{
             }
            let canvasSource = new ImageCanvasSource({
            canvasFunction: canvasFunction,
-           projection: 'EPSG:3857'
+           //projection: 'EPSG:3857'
        })
 
             let layerOptions={
@@ -307,28 +307,35 @@ var storeKeys={
 		
 		}
 
+let canvas = null;
 
-   var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
+var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
 	if(loadflag!=200)
 		return(null);
-    let gps=globalStore.getMultiple(storeKeys);
+	let gps=globalStore.getMultiple(storeKeys);
+	if(!gps.valid)
+		return(null);
+	//if (!canvas) {
+		canvas = document.createElement('canvas');
+		canvas.setAttribute("width", size[0]);
+		canvas.setAttribute("height", size[1]);
+	//}
+	var context = canvas.getContext('2d');
+	// Canvas extent is different than map extent, so compute delta between 
+	// left-top of map and canvas extent.
+	var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
 
-       var canvas = document.createElement('canvas');
-                var context = canvas.getContext('2d');
-                var canvasWidth = size[0], canvasHeight = size[1];
-                canvas.setAttribute('width', canvasWidth);
-                canvas.setAttribute('height', canvasHeight);
-                // Canvas extent is different than map extent, so compute delta between 
-                // left-top of map and canvas extent.
-                var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
-                var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
-                var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
-                var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
+	const mapCenter = [mapExtent[0]+(mapExtent[2]-mapExtent[0])/2,mapExtent[1]+(mapExtent[3]-mapExtent[1])/2];
+	const mapCenterPixel = mapholder.olmap.getPixelFromCoordinate(mapCenter);
+
+	var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
+	var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
 
 
-	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection, gps);
-       return canvas;
-   };
+	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection, gps,mapCenterPixel);
+	return canvas;
+};
 
 
 function ajaxload(url)

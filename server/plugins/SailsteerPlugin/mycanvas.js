@@ -2,21 +2,52 @@ var TWD_Abweichung = [0,0]
 var old_time=performance.now()
 var ln0_1=Math.log(0.1)
 
+function getTransformedCoords(coords) {
+	var angle = -sailsteermapholder.drawing.rotation;
+	var x2 = coords[0];
+	var y2 = coords[1];
+	var cos = Math.cos(angle);
+	var sin = Math.sin(angle);
 
+	var newx = Math.floor(x2 * cos - y2 * sin);
+	var newy = Math.floor(x2 * sin + y2 * cos);
+
+	return [newx, newy]
+}
+
+//  coordinate[0]=lon;
+//  coordinate[1]=lat;
 latloncoordinatetodevice=function(coordinate){
+
+  let point=sailsteermapholder.transformToMap(coordinate)
+  let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+return(Position);
+
+
+/*
 	// to map coordinates
-	let pos=sailsteermapholder.transformToMap(coordinate)
-    //let rt=this.pointToCssPixel(point);->
+	let point=sailsteermapholder.transformToMap(coordinate)
+			let rt=sailsteermapholder.drawing.pointToCssPixel(point);
+	let xy=sailsteermapholder.drawing.pixelToDevice(rt);
+	xy[0]+=canvasdelta[0];
+	xy[1]+=canvasdelta[1];
+	var xy2=getTransformedCoords(xy);
+
+	return(xy);	
+
+	/*	
+	//let rt=this.pointToCssPixel(point);->
 	pixel=sailsteermapholder.olmap.getPixelFromCoordinate(pos);
 	//pixelToDevice(rt); ->    
 	let rt=[];
 	rt[0]=(pixel[0]+canvasdelta[0])*window.window.devicePixelRatio;
 	rt[1]=(pixel[1]+canvasdelta[1])*window.window.devicePixelRatio;
 	return(rt);
-	}
+	*/
+	
+}
 
-drawcross=function(cc,left,top,right,bottom, color)
-	{
+drawcross=function(cc,left,top,right,bottom, color){
 	cc.beginPath();
 	cc.moveTo(left, top);
 	cc.lineTo(right, bottom);
@@ -27,150 +58,141 @@ drawcross=function(cc,left,top,right,bottom, color)
 	cc.fillStyle = color;
 	cc.strokeStyle = color;
 	cc.stroke();
-		
-	},
+
+}
+
+drawpointcross=function(cc,coordinates, color){
+	cc.beginPath();
+	cc.moveTo(coordinates[0]-100,coordinates[1]);
+	cc.lineTo(coordinates[0]+100,coordinates[1]);
+
+	cc.moveTo(coordinates[0],coordinates[1]-100);
+	cc.lineTo(coordinates[0],coordinates[1]+100);
+
+	cc.stroke();	
+	cc.lineWidth = 5;//0.02*Math.min(x,y)
+	cc.fillStyle = color;
+	cc.strokeStyle = color;
+	cc.stroke();
+
+}
 
 
-/*
-		drawing.drawImageToContext(center, this.symbolStyles[symbol].image, style);
 
-		//		NOW THE DYNAMIC CONTENT TO BE DIRECTLY DRAWN ONTO CANVAS;
-		if (symbol == "LaylineBB" || symbol == "LaylineSB") 
-		{
-			drawing.context.save()
-			this.DrawLaylineArea(drawing, center, symbol == "LaylineBB" ? "red" : "green", style)
-			drawing.context.restore()
-
-			if (this.gps.waypoint.position) {
-				//Laylines vom Wegpunkt zeichnen
-				let draw_distance = globalStore.getData(keys.properties.sailsteeroverlap) ? globalStore.getData(keys.properties.sailsteerlength) : Math.min(symbol == "LaylineBB" ? this.dist_BB : this.dist_SB, globalStore.getData(keys.properties.sailsteerlength))
-				let targetWP = this.computeTarget(this.WP_Map, style.rotation * 180 / Math.PI + 180, draw_distance)
-				if (globalStore.getData(keys.properties.sailsteermarke))
-					drawing.drawLineToContext([this.WP_Map, targetWP], { color: symbol == "LaylineBB" ? "red" : "green", width: 5, dashed: true });
-				// Only for testing purposes
-				//if (is_SB != null && is_BB != null)
-				//drawing.drawLineToContext([pos_SB, pos_BB], { color: "blue", width: 5 });
-			}
-
-			//Laylines vom Boot zeichnen
-			let draw_distance = globalStore.getData(keys.properties.sailsteeroverlap) ? globalStore.getData(keys.properties.sailsteerlength) : Math.min(symbol == "LaylineBB" ? this.dist_BB : this.dist_SB, globalStore.getData(keys.properties.sailsteerlength))
-			let targetboat = this.computeTarget(boatPosition, style.rotation * 180 / Math.PI, draw_distance)
-			if (globalStore.getData(keys.properties.sailsteerboot))
-				drawing.drawLineToContext([boatPosition, targetboat], { color: symbol == "LaylineBB" ? "red" : "green", width: 5, dashed: true });
-			drawing.drawImageToContext(center, this.symbolStyles[symbol].image, style);
-		}
-*/
-
-
-mycanvasFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection, props) {
-       var ctx = canvas.getContext('2d');
-       canvas.setAttribute('width', size[0]);
-       canvas.setAttribute('height', size[1]);
-
+mycanvasFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection, props,mapCenterPixel) {
 	//sailsteercanvas = canvas;
 	sailsteermapholder=mapholder;
 	sailsteerImageCanvasSource=ImageCanvasSource; // WIRD BENNÖTIGT IM SAILSTEER PLUGIN
 	canvasdelta = delta;
-	//canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
-	
-	drawcross(ctx,0,0,canvas.getAttribute('width'),canvas.getAttribute('height'), "red");
+	sailsteermapCenterPixel=mapCenterPixel;
+
 	renderCanvas(canvas,mapholder.center,props);
-     return canvas;
-   };
-/*
-var fileref=document.createElement('script');
-fileref.setAttribute("type","text/javascript");
-fileref.setAttribute("src", './util/globalstore.jsx');
-document.getElementsByTagName("headsailsteermapholder")[0].appendChild(fileref)
-*/
+}
 var first=true;
-
-toCoord=function(a){
-    let rt=[a.longitude,a.latitude];
-    return rt;
-};
-
-
-
 
 
 renderCanvas = function(canvas, center, props) {
 	load();
-	let coordinate=[];
-	coordinate[0]=props.boatposition.longitude;
-	coordinate[1]=props.boatposition.latitude;
-	boatPosition = sailsteermapholder.transformToMap(coordinate);
 
-	cc = canvas.getContext('2d');
-	cc.save();
-	cc.setTransform(1, 0, 0, 1, 0, 0);
-	cc.clearRect(0, 0, canvas.width, canvas.height);
-	//cc.rotate(sailsteermapholder.drawing.rotation)
-	canvasWidth = canvas.getAttribute('width');
-	canvasHeight = canvas.getAttribute('height');
+	ctx = canvas.getContext('2d');
 
+  ctx.save();
+// Reset current transformation matrix to the identity matrix
+ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-	let center_canvas_coordinates = latloncoordinatetodevice(center);
-	//center_canvas_coordinates = [canvas.width / 2, canvas.height / 2];
-	first = false;
+  ctx.clearRect(0, 0, canvas.getAttribute("width"), canvas.getAttribute("height"));
+  ctx.fillStyle = "rgba(255, 0, 0, 1)";
 
-	cc.translate(center_canvas_coordinates[0], center_canvas_coordinates[1]); // Nullpunkt auf den center (in canvaskoordinaten) setzen
-	cc.rotate(sailsteermapholder.drawing.rotation)
+  // Draw relative to the center of the canvas
+  ctx.translate(canvas.getAttribute("width") / 2, canvas.getAttribute("height") / 2);
+  // Cancel the rotation of the map.
+  ctx.rotate(-sailsteermapholder.olmap.getView().getRotation());
+	  // Position everything relative to the center of the map
+  //ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
+	  // Position everything relative to the center of the map
+  //ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
 
-	var angle = props.course
-	var radius = 120;
+  var angle = 0;props.course
+  var radius = 120;
 
-	calc_LaylineAreas(props)
-	DrawOuterRing(canvas, radius, -angle);
-	DrawKompassring(canvas, radius, -angle);
-	DrawLaylineArea(canvas, radius, props.LLBB, TWD_Abweichung, "red")
-	DrawLaylineArea(canvas, radius, props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
-	DrawWindpfeilIcon(canvas, radius, props.AWA + props.course, "rgb(0,255,0)", 'A')
-	DrawWindpfeilIcon(canvas, radius, props.TWA + props.course, "blue", 'T')
-	//	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
-	DrawWindpfeilIcon(canvas, radius, props.TSS, "yellow", '~')
+  calc_LaylineAreas(props)
+  DrawOuterRing(canvas, radius, -angle);
+  DrawKompassring(canvas, radius, -angle);
+  DrawLaylineArea(canvas, radius, props.LLBB, TWD_Abweichung, "red")
+  DrawLaylineArea(canvas, radius, props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
+  DrawWindpfeilIcon(canvas, radius, props.AWA + props.course, "rgb(0,255,0)", 'A')
+  DrawWindpfeilIcon(canvas, radius, props.TWA + props.course, "blue", 'T')
+  //	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
+	  DrawWindpfeilIcon(canvas, radius, props.TSS, "yellow", '~')
 
-	//Laylines vom Boot zeichnen BB
-	let draw_distance = props.sailsteeroverlap ? props.sailsteerlength : Math.min(this.dist_BB, props.sailsteerlength);
-/*	let targetboat = this.computeTarget(props.LLBB * 180 / Math.PI, draw_distance)
-	if (props.sailsteerboot) // laylinbes vom boot aus zeichnen
-		drawing.drawLineToContext([boatPosition, targetboat], { color: "red", width: 5, dashed: true });
-*/
+ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
 
+  let coordinate=[];
+  coordinate[0]=props.boatposition.lon;
+  coordinate[1]=props.boatposition.lat;
+	let point=sailsteermapholder.transformToMap(coordinate)
+boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+console.log("boatposition:"+boatPosition)
+  drawpointcross(ctx,boatPosition, "blue")
 
-	cc.restore();
-	//cc.setTransform(1, 0, 0, 1, 0, 0);
+			//Laylines vom Boot zeichnen BB
+  let draw_distance = props.sailsteeroverlap ? props.sailsteerlength : Math.min(this.dist_BB, props.sailsteerlength);
+  /*	let targetboat = this.computeTarget(props.LLBB * 180 / Math.PI, draw_distance)
+							if (props.sailsteerboot) // laylinbes vom boot aus zeichnen
+  drawing.drawLineToContext([boatPosition, targetboat], { color: "red", width: 5, dashed: true });
+  */
+  if(this.MapLayline)
+	  DrawMapLaylines(canvas); 
+  coordinate=[];
+  coordinate[0]=props.boatposition.lon;
+  coordinate[1]=props.boatposition.lat;
+	point=sailsteermapholder.transformToMap(coordinate)
 
-	DrawMapLaylines(canvas) 
-
-
+  //boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+  boatPosition=latloncoordinatetodevice(coordinate)
+//boatPosition[0]+=canvasdelta[0]
+//boatPosition[1]+=canvasdelta[1]
+  drawpointcross(ctx,boatPosition, "green")
+  ctx.restore();
 };
 
 
 
 calc_LaylineAreas = function(props) {
+	try{
 
-	this.dist_SB = this.dist_BB = props.sailsteerlength
-	b_pos = new LatLon(props.boatposition.lat, props.boatposition.lon);
-	if (props.WPposition) {
-		WP_pos = new LatLon(props.WPposition.lat, props.WPposition.lon);
+		this.dist_SB = this.dist_BB = props.sailsteerlength
+		b_pos = new LatLon(props.boatposition.lat, props.boatposition.lon);
+		if (props.WPposition) {
+			WP_pos = new LatLon(props.WPposition.lat, props.WPposition.lon);
 
-		// Schnittpunkte berechnen
-		let is_SB = LatLon.intersection(b_pos, props.LLSB, WP_pos, props.LLBB + 180)
-		let is_BB = LatLon.intersection(b_pos, props.LLBB, WP_pos, props.LLSB + 180)
-		let dist_BB = b_pos.distanceTo(is_BB);
-		let dist_SB = b_pos.distanceTo(is_SB);
+			// Schnittpunkte berechnen
+			var is_SB = LatLon.intersection(b_pos, props.LLSB, WP_pos, props.LLBB + 180)
+									var is_BB = LatLon.intersection(b_pos, props.LLBB, WP_pos, props.LLSB + 180)
+									if(is_BB)
+										var dist_BB = b_pos.distanceTo(is_BB);
+			if(is_SB)
+				var dist_SB = b_pos.distanceTo(is_SB);
 
+			if(is_SB && is_BB)
+			{
+				this.ep_BB_boat = is_BB; // wenn abstand zu gross, endpunkte der LL berechnen
+				this.ep_BB_WP = is_BB;
+				this.ep_SB_boat = is_SB;
+				this.ep_SB_WP = is_SB;
 
-		this.ep_BB_boat = is_BB; // wenn abstand zu gross, endpunkte der LL berechnen
-		this.ep_BB_WP = is_BB;
-		this.ep_SB_boat = is_SB;
-		this.ep_SB_WP = is_SB;
-
-		this.MapLayline = { Boat: { SB: { P1: b_pos, P2: is_SB, color: 'rgb(0,255,0)' }, BB: { P1: b_pos, P2: is_BB, color: 'red' } }, WP: { SB: { P1: WP_pos, P2: is_SB, color: 'red' }, BB: { P1: WP_pos, P2: is_BB, color: 'rgb(0,255,0)' } } }
-		this.ep_BB_boat = is_BB; // wenn abstand zu gross, endpunkte der LL berechnen
-
+				this.MapLayline = { Boat: { SB: { P1: b_pos, P2: is_SB, color: 'rgb(0,255,0)' }, BB: { P1: b_pos, P2: is_BB, color: 'red' } }, WP: { SB: { P1: WP_pos, P2: is_SB, color: 'red' }, BB: { P1: WP_pos, P2: is_BB, color: 'rgb(0,255,0)' } } }
+			}
+			else
+				this.MapLayline = null; // wenn abstand zu gross, endpunkte der LL berechnen
+		}
 	}
+	catch (e) {
+		// Anweisungen für jeden Fehler
+		console.log(e); // Fehler-Objekt an die Error-Funktion geben
+	}
+
+
 
 
 
@@ -183,12 +205,12 @@ calc_LaylineAreas = function(props) {
 	let difftime = (performance.now() - old_time) / 1000 // sec
 	old_time = performance.now()
 
-	let k = ln0_1 / reduktionszeit
+							let k = ln0_1 / reduktionszeit
 	for (var i = 0; i < 2; i++)
 		TWD_Abweichung[i] *= Math.exp(k * difftime)
 
 
-	let winkelabweichung = 0;
+		let winkelabweichung = 0;
 	winkelabweichung = props.TWD - props.TSS
 	winkelabweichung %= 360
 	if (Math.abs(winkelabweichung) > 180)
@@ -202,53 +224,53 @@ calc_LaylineAreas = function(props) {
 
 
 DrawMapLaylines=function(canvas) 
-	{
+					{
 	DrawLine=function(p1,p2,color)
-	{	ctx.beginPath();
-	ctx.moveTo(p1[0],p1[1]);   // Move pen to center
-	ctx.lineTo(p2[0],p2[1]);
-	ctx.closePath();
-	
+					{	ctx.beginPath();
+					ctx.moveTo(p1[0],p1[1]);   // Move pen to center
+					ctx.lineTo(p2[0],p2[1]);
+					ctx.closePath();
 
-	ctx.lineWidth = 5;//0.02*Math.min(x,y)
-	ctx.fillStyle = color
-	ctx.strokeStyle = color;// !!!
-	ctx.stroke();
-} 
+
+					ctx.lineWidth = 5;//0.02*Math.min(x,y)
+					ctx.fillStyle = color
+					ctx.strokeStyle = color;// !!!
+					ctx.stroke();
+					} 
 	var ctx = canvas.getContext('2d');
 	ctx.save();
-// Layline vom Boot:
-// BB
-p1=latloncoordinatetodevice([this.MapLayline.Boat.BB.P1._lon,this.MapLayline.Boat.BB.P1._lat]);
-p2=latloncoordinatetodevice([this.MapLayline.Boat.BB.P2._lon,this.MapLayline.Boat.BB.P2._lat]);
+	// Layline vom Boot:
+	// BB
+	p1=latloncoordinatetodevice([this.MapLayline.Boat.BB.P1._lon,this.MapLayline.Boat.BB.P1._lat]);
+	p2=latloncoordinatetodevice([this.MapLayline.Boat.BB.P2._lon,this.MapLayline.Boat.BB.P2._lat]);
 	this.DrawLine(p1,p2,this.MapLayline.Boat.BB.color);
-// SB
-p1=latloncoordinatetodevice([this.MapLayline.Boat.SB.P1._lon,this.MapLayline.Boat.SB.P1._lat]);
-p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
+	// SB
+	p1=latloncoordinatetodevice([this.MapLayline.Boat.SB.P1._lon,this.MapLayline.Boat.SB.P1._lat]);
+	p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
 	this.DrawLine(p1,p2,this.MapLayline.Boat.SB.color);
 	ctx.restore()
-// Layline vom Wegpunkt:
-// BB
-p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
-p2=latloncoordinatetodevice([this.MapLayline.WP.BB.P2._lon,this.MapLayline.WP.BB.P2._lat]);
-	this.DrawLine(p1,p2,this.MapLayline.WP.BB.color);
-// SB
-p1=latloncoordinatetodevice([this.MapLayline.WP.SB.P1._lon,this.MapLayline.WP.SB.P1._lat]);
-p2=latloncoordinatetodevice([this.MapLayline.WP.SB.P2._lon,this.MapLayline.WP.SB.P2._lat]);
-	this.DrawLine(p1,p2,this.MapLayline.WP.SB.color);
-	ctx.restore()
+				// Layline vom Wegpunkt:
+				// BB
+				p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
+				p2=latloncoordinatetodevice([this.MapLayline.WP.BB.P2._lon,this.MapLayline.WP.BB.P2._lat]);
+				this.DrawLine(p1,p2,this.MapLayline.WP.BB.color);
+				// SB
+				p1=latloncoordinatetodevice([this.MapLayline.WP.SB.P1._lon,this.MapLayline.WP.SB.P1._lat]);
+				p2=latloncoordinatetodevice([this.MapLayline.WP.SB.P2._lon,this.MapLayline.WP.SB.P2._lat]);
+				this.DrawLine(p1,p2,this.MapLayline.WP.SB.color);
+				ctx.restore()
 
-	}
+					}
 
 DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
-/*
-    if (opt_options && opt_options.fixX !== undefined) {
-        center[0]=opt_options.fixX*this.devPixelRatio;
-    }
-    if (opt_options &&  opt_options.fixY !== undefined) {
-        center[1]=opt_options.fixY*this.devPixelRatio;
-    }
-*/
+	/*
+	if (opt_options && opt_options.fixX !== undefined) {
+		center[0]=opt_options.fixX*this.devPixelRatio;
+	}
+	if (opt_options &&  opt_options.fixY !== undefined) {
+		center[1]=opt_options.fixY*this.devPixelRatio;
+	}
+	*/
 	var ctx = canvas.getContext('2d');
 	ctx.save();
 
@@ -257,14 +279,14 @@ DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
 
 	var radius = 0.9*radius	//0.45*Math.min(x,y)
 
-	ctx.rotate((angle / 180) * Math.PI)
+					ctx.rotate((angle / 180) * Math.PI)
 
-	// Laylines
+					// Laylines
 	ctx.beginPath();
 	ctx.moveTo(0, 0);   // Move pen to center
 	ctx.lineTo(0, -radius);
 	ctx.closePath();
-	
+
 
 	ctx.lineWidth = 5;//0.02*Math.min(x,y)
 	ctx.fillStyle = color;
@@ -274,24 +296,24 @@ DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
 	ctx.stroke();
 
 	ctx.lineWidth = 0.01*Math.min(x,y)
-	// Areas	
+					// Areas	
 	ctx.globalAlpha *= 0.3;
 	ctx.beginPath();
 	ctx.moveTo(0, 0);   // Move pen to center
 	ctx.arc(0, 0, radius, Math.PI * (TWD_Abweichung[0] - 90) / 180, Math.PI * (TWD_Abweichung[1] - 90) / 180)
-	ctx.closePath();
+					ctx.closePath();
 
 	ctx.fillStyle = color;
 	//ctx.setLineDash([]);
 	ctx.fill()
-	//ctx.stroke();
+					//ctx.stroke();
 	ctx.restore()
 },
 
 
 
 
-DrawWindpfeilIcon=function(canvas, radius,angle, color, Text) {
+		DrawWindpfeilIcon=function(canvas, radius,angle, color, Text) {
 	if (!canvas) return undefined;
 	var ctx = canvas.getContext('2d');
 	ctx.save();
@@ -299,19 +321,19 @@ DrawWindpfeilIcon=function(canvas, radius,angle, color, Text) {
 	var radius_kompassring = radius	//0.525*Math.min(x,y);
 	var radius_outer_ring = radius *1.3//= 0.65*Math.min(x,y);
 	var thickness = 0.1*Math.min(400,400)
-	thickness = 25;
+					thickness = 25;
 
 	ctx.rotate((angle / 180) * Math.PI)
 
-	ctx.beginPath();
+					ctx.beginPath();
 	if (Text == 'A')
 		ctx.moveTo(0, -radius_kompassring + 0.75*thickness); // Move pen to bottom-center corner
 	else
 		ctx.moveTo(0, -radius_kompassring - 0.5*thickness); // Move pen to bottom-center corner
 	ctx.lineTo(-0.75*thickness, -radius_outer_ring-thickness); // Line to top left corner
-	ctx.lineTo(+0.75*thickness, -radius_outer_ring-thickness); // Line to top-right corner
+		ctx.lineTo(+0.75*thickness, -radius_outer_ring-thickness); // Line to top-right corner
 	ctx.closePath(); // Line to bottom-center corner
-	ctx.fillStyle = color;
+		ctx.fillStyle = color;
 	ctx.lineWidth = 0.05*thickness;
 	ctx.strokeStyle = color;
 	ctx.fill();
@@ -329,7 +351,7 @@ DrawWindpfeilIcon=function(canvas, radius,angle, color, Text) {
 
 
 
-DrawOuterRing=function(canvas,radius, angle){
+		DrawOuterRing=function(canvas,radius, angle){
 	if (!canvas) return undefined;
 
 	var ctx = canvas.getContext('2d');
@@ -339,7 +361,7 @@ DrawOuterRing=function(canvas,radius, angle){
 	var y = 0;
 	ctx.rotate((-angle / 180) * Math.PI)
 
-	var thickness = 0.2*radius
+					var thickness = 0.2*radius
 	radius*=1.25
 	var someColors = [];
 	someColors.push("#F00");
@@ -354,7 +376,7 @@ DrawOuterRing=function(canvas,radius, angle){
 		var start = -Math.PI / 2;
 		var gradient = null;
 		var startColor = null,
-			endColor = null;
+				endColor = null;
 
 		for (var i = 0; i < 2; i++) {
 			startColor = radientColors[i];
@@ -413,7 +435,7 @@ DrawKompassring=function(canvas,radius, angle) {
 	ctx.save();
 
 	var thickness = 0.2*radius//1*Math.min(x,y)
-	ctx.beginPath();
+					ctx.beginPath();
 	ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);
 	ctx.lineWidth = thickness;
 	ctx.strokeStyle = "rgb(255,255,255)";
@@ -443,5 +465,5 @@ DrawKompassring=function(canvas,radius, angle) {
 
 let modulePath = "/viewer/libraries/latlon.js";
 async function load() {
-    let latlon = await import(modulePath);
-  }
+	let latlon = await import(modulePath);
+}
