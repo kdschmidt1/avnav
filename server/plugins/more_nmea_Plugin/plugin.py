@@ -265,6 +265,10 @@ class Plugin(object):
         if (self.calcTrueWind(gpsdata)):
             self.api.addData(self.PATHAWA, gpsdata['AWA'],source=source)
             self.api.addData(self.PATHAWD, gpsdata['AWD'],source=source)
+            
+            if( gpsdata['AWD'] != (gpsdata['AWA']+gpsdata['track'])%360):
+                TEST=1
+            
             self.api.addData(self.PATHAWS, gpsdata['AWS'],source=source)
             self.api.addData(self.PATHTWD, gpsdata['TWD'],source=source)
             self.api.addData(self.PATHTWS, gpsdata['TWS'],source=source)

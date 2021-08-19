@@ -98,7 +98,7 @@ renderCanvas = function(canvas, center, props) {
 
   ctx.save();
 // Reset current transformation matrix to the identity matrix
-ctx.setTransform(1, 0, 0, 1, 0, 0);
+//ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   ctx.clearRect(0, 0, canvas.getAttribute("width"), canvas.getAttribute("height"));
   ctx.fillStyle = "rgba(255, 0, 0, 1)";
@@ -109,21 +109,27 @@ ctx.setTransform(1, 0, 0, 1, 0, 0);
   ctx.rotate(-sailsteermapholder.olmap.getView().getRotation());
 	  // Position everything relative to the center of the map
   //ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
-	  // Position everything relative to the center of the map
-  //ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
 
-  var angle = 0;props.course
+
+	maprotationdeg = sailsteermapholder.olmap.getView().getRotation()/Math.PI*180
+	boatrotationdeg = props.course;
+	nordrotion = maprotationdeg;
+	// d.h. Direction (TWD, AWD) bezoghen auf maprotation
+	// und Angle (TWA, AWA) bezoghen auf (maprotationdeg+boatrotationdeg)
+	// winkel immer in neg richtung wg. Unterschied Kompassrotation zu Canvasrotation
+	
+	 
+  var angle = 0;
   var radius = 120;
-
   calc_LaylineAreas(props)
-  DrawOuterRing(canvas, radius, -angle);
-  DrawKompassring(canvas, radius, -angle);
+  DrawOuterRing(canvas, radius, maprotationdeg+boatrotationdeg);
+  DrawKompassring(canvas, radius, maprotationdeg);
   DrawLaylineArea(canvas, radius, props.LLBB, TWD_Abweichung, "red")
   DrawLaylineArea(canvas, radius, props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
-  DrawWindpfeilIcon(canvas, radius, props.AWA + props.course, "rgb(0,255,0)", 'A')
-  DrawWindpfeilIcon(canvas, radius, props.TWA + props.course, "blue", 'T')
+  DrawWindpfeilIcon(canvas, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
+  DrawWindpfeilIcon(canvas, radius, maprotationdeg+props.TWD , "blue", 'T')
   //	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
-	  DrawWindpfeilIcon(canvas, radius, props.TSS, "yellow", '~')
+	  DrawWindpfeilIcon(canvas, radius, + maprotationdeg+props.TSS, "yellow", '~')
 
 ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
 
@@ -216,7 +222,6 @@ calc_LaylineAreas = function(props) {
 	if (Math.abs(winkelabweichung) > 180)
 		winkelabweichung = winkelabweichung < -180 ? winkelabweichung % 180 + 180 : winkelabweichung
 	winkelabweichung = winkelabweichung > 180 ? winkelabweichung % 180 - 180 : winkelabweichung
-
 	TWD_Abweichung[0] = winkelabweichung < TWD_Abweichung[0] ? winkelabweichung : TWD_Abweichung[0];
 	TWD_Abweichung[1] = winkelabweichung > TWD_Abweichung[1] ? winkelabweichung : TWD_Abweichung[1];
 	//console.log("TWD_PT1: " + this.gps.TSS.toFixed(2) + " TWD " + this.TWD.toFixed(2) + " delta ", + winkelabweichung.toFixed(2) + " Abw: " + this.TWD_Abweichung[0].toFixed(2) + ":" + this.TWD_Abweichung[1].toFixed(2) + " DT " + this.deltat.toFixed(0))
@@ -359,7 +364,7 @@ DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
 
 	var x = 0;
 	var y = 0;
-	ctx.rotate((-angle / 180) * Math.PI)
+	ctx.rotate((angle / 180) * Math.PI)
 
 					var thickness = 0.2*radius
 	radius*=1.25
@@ -434,6 +439,7 @@ DrawKompassring=function(canvas,radius, angle) {
 	var ctx = canvas.getContext('2d');
 	ctx.save();
 
+	ctx.rotate((angle / 180) * Math.PI)
 	var thickness = 0.2*radius//1*Math.min(x,y)
 					ctx.beginPath();
 	ctx.arc(0, 0, radius, 0, 2 * Math.PI, false);

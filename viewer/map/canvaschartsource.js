@@ -292,6 +292,7 @@ var storeKeys={
       course: 'nav.gps.course',
       myValue: 'nav.gps.test', //stored at the server side with gps.test
 		AWA:'nav.gps.AWA',
+		AWD:'nav.gps.AWD',
 		TWA:'nav.gps.TWA',
 		TWD:'nav.gps.TWD',
 		TSS:'nav.gps.TSS',
@@ -304,6 +305,7 @@ var storeKeys={
         sailsteeroverlap: 'properties.sailsteeroverlap',
 		sailsteerlength:'properties.sailsteerlength',
 		sailsteerboot: 'properties.sailsteerboot',
+		TWD_filt:	'properties.sailsteerTWDfilt',
 		
 		}
 
