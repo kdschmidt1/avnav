@@ -213,7 +213,7 @@ calc_LaylineAreas = function(props) {
 							this.ep_BB_WP = is_BB_WP;
 							this.ep_SB_boat = is_SB_boat;
 							this.ep_SB_WP = is_SB_WP;
-
+							//MapLayline.WP.xx.P2 ist verkehrt!!
 							this.MapLayline = { Boat: { SB: { P1: b_pos, P2: is_SB_boat, color: 'rgb(0,255,0)' }, BB: { P1: b_pos, P2: is_BB_boat, color: 'red' } }, WP: { SB: { P1: WP_pos, P2: is_SB_WP, color: 'red' }, BB: { P1: WP_pos, P2: is_BB_WP, color: 'rgb(0,255,0)' } } }
 						}
 						else
@@ -286,7 +286,6 @@ DrawMapLaylines=function(canvas, radius, props) {
 	}
 	if(props.sailsteermarke)
 	{
-		ctx.save();
 		// Layline vom Wegpunkt:
 		// BB
 		p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
