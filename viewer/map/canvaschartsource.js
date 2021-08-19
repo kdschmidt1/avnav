@@ -305,6 +305,7 @@ var storeKeys={
         sailsteeroverlap: 'properties.sailsteeroverlap',
 		sailsteerlength:'properties.sailsteerlength',
 		sailsteerboot: 'properties.sailsteerboot',
+		sailsteermarke: 'properties.sailsteermarke',
 		TWD_filt:	'properties.sailsteerTWDfilt',
 		
 		}
