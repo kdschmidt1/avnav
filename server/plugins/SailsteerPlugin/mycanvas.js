@@ -2,50 +2,16 @@ var TWD_Abweichung = [0,0]
 var old_time=performance.now()
 var ln0_1=Math.log(0.1)
 
-function getTransformedCoords(coords) {
-	var angle = -sailsteermapholder.drawing.rotation;
-	var x2 = coords[0];
-	var y2 = coords[1];
-	var cos = Math.cos(angle);
-	var sin = Math.sin(angle);
-
-	var newx = Math.floor(x2 * cos - y2 * sin);
-	var newy = Math.floor(x2 * sin + y2 * cos);
-
-	return [newx, newy]
-}
 
 //  coordinate[0]=lon;
 //  coordinate[1]=lat;
 latloncoordinatetodevice=function(coordinate){
-
-  let point=sailsteermapholder.transformToMap(coordinate)
-  let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
-return(Position);
-
-
-/*
-	// to map coordinates
 	let point=sailsteermapholder.transformToMap(coordinate)
-			let rt=sailsteermapholder.drawing.pointToCssPixel(point);
-	let xy=sailsteermapholder.drawing.pixelToDevice(rt);
-	xy[0]+=canvasdelta[0];
-	xy[1]+=canvasdelta[1];
-	var xy2=getTransformedCoords(xy);
-
-	return(xy);	
-
-	/*	
-	//let rt=this.pointToCssPixel(point);->
-	pixel=sailsteermapholder.olmap.getPixelFromCoordinate(pos);
-	//pixelToDevice(rt); ->    
-	let rt=[];
-	rt[0]=(pixel[0]+canvasdelta[0])*window.window.devicePixelRatio;
-	rt[1]=(pixel[1]+canvasdelta[1])*window.window.devicePixelRatio;
-	return(rt);
-	*/
-	
+		  let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+	let xy=sailsteermapholder.drawing.pixelToDevice(Position); //berücksichtigt devPixelRatio
+	return(Position);
 }
+
 
 drawcross=function(cc,left,top,right,bottom, color){
 	cc.beginPath();
@@ -124,8 +90,8 @@ renderCanvas = function(canvas, center, props) {
   calc_LaylineAreas(props)
   DrawOuterRing(canvas, radius, maprotationdeg+boatrotationdeg);
   DrawKompassring(canvas, radius, maprotationdeg);
-  DrawLaylineArea(canvas, radius, props.LLBB, TWD_Abweichung, "red")
-  DrawLaylineArea(canvas, radius, props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
+  DrawLaylineArea(canvas, radius, maprotationdeg+props.LLBB, TWD_Abweichung, "red")
+  DrawLaylineArea(canvas, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
   DrawWindpfeilIcon(canvas, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
   DrawWindpfeilIcon(canvas, radius, maprotationdeg+props.TWD , "blue", 'T')
   //	if(globalStore.getData(keys.properties.sailsteerTWDfilt))	 
@@ -298,13 +264,12 @@ DrawLaylineArea=function(canvas, radius, angle,TWD_Abweichung, color) {
 	*/
 	var ctx = canvas.getContext('2d');
 	ctx.save();
-
+	
 	var x = 0;
 	var y = 0;
 
 	var radius = 0.9*radius	//0.45*Math.min(x,y)
-
-					ctx.rotate((angle / 180) * Math.PI)
+	ctx.rotate((angle / 180) * Math.PI)
 
 					// Laylines
 	ctx.beginPath();
