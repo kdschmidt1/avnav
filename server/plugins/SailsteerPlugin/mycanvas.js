@@ -144,6 +144,9 @@ calc_LaylineAreas = function(props) {
 			calc_endpoint = function(intersection, pos) {
 				let is_xx;
 				let dist_xx = pos.rhumbDistanceTo(intersection);	// in km
+				if (dist_xx>20000)	// Schnittpunkt liegt auf der gegenüberliegenden Erdseite!
+					return null;
+				console.log("dist:"+dist_xx)
 				if(dist_xx > props.sailsteerlength/1000) // wenn abstand gösser gewünschte LL-Länge, neuen endpunkt der LL berechnen
 					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), props.sailsteerlength/1000)
 				else if(dist_xx< props.sailsteerlength/1000 && props.sailsteeroverlap)// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
@@ -153,7 +156,7 @@ calc_LaylineAreas = function(props) {
 				return(is_xx)
 			};
 
-
+			is_BB_boat=is_BB_WP = is_SB_boat=is_SB_WP =null;
 			if(is_BB)
 			{
 				is_BB_boat=calc_endpoint(is_BB, b_pos);
@@ -166,7 +169,7 @@ calc_LaylineAreas = function(props) {
 				is_SB_WP = calc_endpoint(is_SB, WP_pos);
 			}
 
-			if(is_SB && is_BB){	
+			if(is_SB_boat && is_SB_WP && is_BB_boat && is_BB_WP){	
 				// es gibt schnittpunkte
 				this.MapLayline = 
 				{ 
