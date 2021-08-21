@@ -43,9 +43,37 @@ drawpointcross=function(cc,coordinates, color){
 
 }
 
+var mycanvas_storeKeys={
+      course: 'nav.gps.course',
+      myValue: 'nav.gps.test', //stored at the server side with gps.test
+		AWA:'nav.gps.AWA',
+		AWD:'nav.gps.AWD',
+		TWA:'nav.gps.TWA',
+		TWD:'nav.gps.TWD',
+		TSS:'nav.gps.TSS',
+		LLSB:'nav.gps.LLSB',
+		LLBB:'nav.gps.LLBB',
+		valid:'nav.gps.valid',
+		boatposition: 'nav.gps.position',
+		WPposition:'nav.wp.position',
+		sailsteerrefresh:'properties.sailsteerrefresh',
+        sailsteeroverlap: 'properties.sailsteeroverlap',
+		sailsteerlength:'properties.sailsteerlength',
+		sailsteerboot: 'properties.sailsteerboot',
+		sailsteermarke: 'properties.sailsteermarke',
+		TWD_filt:	'properties.sailsteerTWDfilt',
+		
+		}
+/**
+ * Creates a point on the earth's surface at the supplied latitude / longitude
+ *
+ * @constructor
+ * @param {Number} lat: latitude in numeric degrees
+ * @param {Number} lon: longitude in numeric degrees
+ * @param {Number} [rad=6371]: radius of earth if different value is required from standard 6,371km
+ */
 
-
-mycanvasFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource, resolution, pixelRatio, size, projection, props,mapCenterPixel) {
+mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) {
 	//sailsteercanvas = canvas;
 	load();
 	sailsteermapholder=mapholder;
@@ -70,7 +98,6 @@ mycanvasFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource,
 	nordrotion = maprotationdeg;
 	
 	 
-  const angle = 0;
   const radius = 120;
   calc_LaylineAreas(props)
   DrawOuterRing(ctx, radius, maprotationdeg+boatrotationdeg);
@@ -79,7 +106,7 @@ mycanvasFunction = function(canvas, mapholder, delta, extent, ImageCanvasSource,
   DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
   DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
   DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
-  if(props.TWDfilt)	 
+  if(props.TWD_filt)	 
 	  DrawWindpfeilIcon(ctx, radius, + maprotationdeg+props.TSS, "yellow", '~')
 
 // Position everything relative to the center of the map
@@ -95,7 +122,7 @@ boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
 
 	//Laylines auf map zeichnen 
   if(this.MapLayline)
-	  DrawMapLaylines(canvas, radius, props); 
+	  DrawMapLaylines(ctx, radius, props); 
   coordinate=[];
   coordinate[0]=props.boatposition.lon;
   coordinate[1]=props.boatposition.lat;
@@ -107,7 +134,7 @@ boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
 //boatPosition[1]+=canvasdelta[1]
   // for debugging drawpointcross(ctx,boatPosition, "green")
   ctx.restore();
-};
+}
 
 
 
@@ -127,7 +154,6 @@ calc_LaylineAreas = function(props) {
 				let dist_xx = pos.rhumbDistanceTo(intersection);	// in km
 				if (dist_xx>20000)	// Schnittpunkt liegt auf der gegenüberliegenden Erdseite!
 					return null;
-				console.log("dist:"+dist_xx)
 				if(dist_xx > props.sailsteerlength/1000) // wenn abstand gösser gewünschte LL-Länge, neuen endpunkt der LL berechnen
 					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), props.sailsteerlength/1000)
 				else if(dist_xx< props.sailsteerlength/1000 && props.sailsteeroverlap)// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
@@ -285,7 +311,7 @@ DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
 
 
 
-		DrawWindpfeilIcon=function(ctx, radius,angle, color, Text) {
+DrawWindpfeilIcon=function(ctx, radius,angle, color, Text) {
 	ctx.save();
 
 	var radius_kompassring = radius	//0.525*Math.min(x,y);
@@ -321,7 +347,7 @@ DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
 
 
 
-		DrawOuterRing=function(ctx,radius, angle){
+DrawOuterRing=function(ctx,radius, angle){
 	ctx.save();
 
 	var x = 0;

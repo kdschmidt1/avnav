@@ -44,10 +44,8 @@ import globalStore from '../util/globalstore.jsx';
 
 var loadflag=400;
 
-var map={};
 var mapholder={};
 var canvasLayer;
-var LmycanvasFunction;
 let styleParam={
     lineWidth:3,
     lineColor: '#000000',
@@ -74,7 +72,7 @@ class CanvasChartSource extends ChartSourceBase{
         super(mapholer,chartEntry);
         this.styleMap={};
 		this.map=mapholer.olmap;
-		map=mapholer.olmap;
+		//map=mapholer.olmap;
 		mapholder=mapholer;
         this.styleFunction=this.styleFunction.bind(this);
 
@@ -182,6 +180,7 @@ class CanvasChartSource extends ChartSourceBase{
             if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
             canvasLayer = new ImageLayer(layerOptions);
 			ajaxload(url);//
+			//loadcanvas(url);
             resolve([canvasLayer]);
 
         });
@@ -279,7 +278,7 @@ export const readFeatureInfoFromCanvas=(doc)=>{
     return rt;
 
 }
-
+/*
   var load=function(filename) { //https://javascript.info/modules-dynamic-imports
     var mycanvasFunction = import(filename);//('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
 	LmycanvasFunction=mycanvasFunction;
@@ -288,34 +287,14 @@ export const readFeatureInfoFromCanvas=(doc)=>{
 	//mycanvasFunction.mycanvasFunction();
 	loadflag=200;
   }
-var storeKeys={
-      course: 'nav.gps.course',
-      myValue: 'nav.gps.test', //stored at the server side with gps.test
-		AWA:'nav.gps.AWA',
-		AWD:'nav.gps.AWD',
-		TWA:'nav.gps.TWA',
-		TWD:'nav.gps.TWD',
-		TSS:'nav.gps.TSS',
-		LLSB:'nav.gps.LLSB',
-		LLBB:'nav.gps.LLBB',
-		valid:'nav.gps.valid',
-		boatposition: 'nav.gps.position',
-		WPposition:'nav.wp.position',
-		sailsteerrefresh:'properties.sailsteerrefresh',
-        sailsteeroverlap: 'properties.sailsteeroverlap',
-		sailsteerlength:'properties.sailsteerlength',
-		sailsteerboot: 'properties.sailsteerboot',
-		sailsteermarke: 'properties.sailsteermarke',
-		TWD_filt:	'properties.sailsteerTWDfilt',
-		
-		}
 
+*/
 let canvas = null;
 
 var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
 	if(loadflag!=200)
 		return(null);
-	let gps=globalStore.getMultiple(storeKeys);
+	let gps=globalStore.getMultiple(mycanvas_storeKeys);
 	if(!gps.valid)
 		return(null);
 	//if (!canvas) {
@@ -335,31 +314,31 @@ var canvasFunction = function(extent, resolution, pixelRatio, size, projection) 
 	var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
 	var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
 
-
-	mycanvasFunction(canvas, mapholder, delta, extent, canvasLayer.sourceChangeKey_.target, resolution, pixelRatio, size, projection, gps,mapCenterPixel);
+	mycanvasFunction(canvas, mapholder, delta, canvasLayer.sourceChangeKey_.target, gps,mapCenterPixel);
 	return canvas;
 };
-
 
 function ajaxload(url)
 {
     var ajax = new XMLHttpRequest();
-    ajax.open('GET', url, false);
+    ajax.open('GET', url, true);
     ajax.onreadystatechange = function ()
     {
+	// var ret
         var script = ajax.response || ajax.responseText;
         if (ajax.readyState === 4)
         {
             switch(ajax.status)
             {
                 case 200:
-                    eval.apply( window, [script] );
+                    /*mycanvas=*/eval.apply( window, [script] );
                     console.log("library loaded: ", url);
-					loadflag=200;
                     break;
                 default:
                     console.log("ERROR: library not loaded: ", url);
             }
+		loadflag=ajax.status;
+
         }
     };
     ajax.send(null);
