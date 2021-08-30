@@ -97,61 +97,6 @@ class CanvasChartSource extends ChartSourceBase{
         }
 
         this.styles = {
-            'Point': new olStyle({
-                image: image,
-            }),
-            'LineString': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-            }),
-            'MultiLineString': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-            }),
-            'MultiPoint': new olStyle({
-                image: image,
-            }),
-            'MultiPolygon': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-                fill: new olFill({
-                    color: styleParam.fillColor,
-                }),
-            }),
-            'Polygon': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-                fill: new olFill({
-                    color: styleParam.fillColor,
-                }),
-            }),
-            'GeometryCollection': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-                fill: new olFill({
-                    color: styleParam.fillColor,
-                }),
-                image: image,
-            }),
-            'Circle': new olStyle({
-                stroke: new olStroke({
-                    color: styleParam.lineColor,
-                    width: styleParam.lineWidth,
-                }),
-                fill: new olFill({
-                    color: styleParam.fillColor,
-                }),
-            }),
         };
 
     }
@@ -250,33 +195,15 @@ export const readFeatureInfoFromCanvas=(doc)=>{
     let rt={
         styles:{}
     };
+	// execute the loaded script
+	//eval.apply( window, [doc] );
+	//loadflag=200;
+	//eval(doc);
     rt.allowFormatter=true;
 	rt.hasAny=true;
+	//rt.script=doc;
 
     return rt;
-    let features={};//parser.readFeatures(doc);
-    features.forEach((feature)=>{
-        if (! feature) return;
-        if (feature.get('sym')){
-            rt.hasSymbols=true;
-        }
-        if (feature.get('link')){
-            rt.hasLinks=true;
-        }
-        let geo=feature.getGeometry();
-        if (geo){
-            rt.hasAny=true;
-        }
-        if (geo instanceof olPoint ) {
-            rt.hasWaypoint = true;
-        }
-        for (let k in styleParam) {
-            rt[stylePrefix + k] =true;
-        }
-    })
-    rt.allowFormatter=true;
-    return rt;
-
 }
 /*
   var load=function(filename) { //https://javascript.info/modules-dynamic-imports

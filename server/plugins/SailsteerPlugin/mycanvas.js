@@ -7,25 +7,11 @@ var ln0_1=Math.log(0.1)
 //  coordinate[1]=lat;
 latloncoordinatetodevice=function(coordinate){
 	let point=sailsteermapholder.transformToMap(coordinate)
-		  let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+	let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
 	let xy=sailsteermapholder.drawing.pixelToDevice(Position); //berücksichtigt devPixelRatio
 	return(Position);
 }
 
-
-drawcross=function(cc,left,top,right,bottom, color){
-	cc.beginPath();
-	cc.moveTo(left, top);
-	cc.lineTo(right, bottom);
-	cc.moveTo(right, top);
-	cc.lineTo(left, bottom);
-	cc.stroke();	
-	cc.lineWidth = 5;//0.02*Math.min(x,y)
-	cc.fillStyle = color;
-	cc.strokeStyle = color;
-	cc.stroke();
-
-}
 
 drawpointcross=function(cc,coordinates, color){
 	cc.beginPath();
@@ -64,18 +50,11 @@ var mycanvas_storeKeys={
 		TWD_filt:	'properties.sailsteerTWDfilt',
 		
 		}
-/**
- * Creates a point on the earth's surface at the supplied latitude / longitude
- *
- * @constructor
- * @param {Number} lat: latitude in numeric degrees
- * @param {Number} lon: longitude in numeric degrees
- * @param {Number} [rad=6371]: radius of earth if different value is required from standard 6,371km
- */
 
 mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) {
 	//sailsteercanvas = canvas;
 	load();
+	const radius = 120;
 	sailsteermapholder=mapholder;
 	sailsteerImageCanvasSource=ImageCanvasSource; // WIRD BENNÖTIGT IM SAILSTEER PLUGIN
 	canvasdelta = delta;
@@ -84,56 +63,41 @@ mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,m
 
 	ctx = canvas.getContext('2d');
 
-  ctx.save();
-  ctx.clearRect(0, 0, canvas.getAttribute("width"), canvas.getAttribute("height"));
-  //ctx.fillStyle = "rgba(255, 0, 0, 1)";
-
-  // Draw relative to the center of the canvas
-  ctx.translate(canvas.getAttribute("width") / 2, canvas.getAttribute("height") / 2);
-  // Cancel the rotation of the map.
-  ctx.rotate(-sailsteermapholder.olmap.getView().getRotation());
+	ctx.save();
+	ctx.clearRect(0, 0, canvas.getAttribute("width"), canvas.getAttribute("height"));
+	// Draw relative to the center of the canvas
+	ctx.translate(canvas.getAttribute("width") / 2, canvas.getAttribute("height") / 2);
+	// Cancel the rotation of the map.
+	ctx.rotate(-sailsteermapholder.olmap.getView().getRotation());
 
 	maprotationdeg = sailsteermapholder.olmap.getView().getRotation()/Math.PI*180
 	boatrotationdeg = props.course;
-	nordrotion = maprotationdeg;
-	
-	 
-  const radius = 120;
-  calc_LaylineAreas(props)
-  DrawOuterRing(ctx, radius, maprotationdeg+boatrotationdeg);
-  DrawKompassring(ctx, radius, maprotationdeg);
-  DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, "red")
-  DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
-  DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
-  DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
-  if(props.TWD_filt)	 
-	  DrawWindpfeilIcon(ctx, radius, + maprotationdeg+props.TSS, "yellow", '~')
 
-// Position everything relative to the center of the map
-ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
+	calc_LaylineAreas(props)
+	DrawOuterRing(ctx, radius, maprotationdeg+boatrotationdeg);
+	DrawKompassring(ctx, radius, maprotationdeg);
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, "red")
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
+	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
+	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
+	if(props.TWD_filt)	 
+		DrawWindpfeilIcon(ctx, radius, + maprotationdeg+props.TSS, "yellow", '~');
 
-  let coordinate=[];
-  coordinate[0]=props.boatposition.lon;
-  coordinate[1]=props.boatposition.lat;
+		// NOW Position everything relative to the center of the map
+	ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
+	let coordinate=[];
+	coordinate[0]=props.boatposition.lon;
+	coordinate[1]=props.boatposition.lat;
 	let point=sailsteermapholder.transformToMap(coordinate)
-boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
-// for debuggingconsole.log("boatposition:"+boatPosition)
-  // for debugging drawpointcross(ctx,boatPosition, "blue")
+	boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+	// for debuggingconsole.log("boatposition:"+boatPosition)
+	// for debugging drawpointcross(ctx,boatPosition, "blue")
 
 	//Laylines auf map zeichnen 
-  if(this.MapLayline)
-	  DrawMapLaylines(ctx, radius, props); 
-  coordinate=[];
-  coordinate[0]=props.boatposition.lon;
-  coordinate[1]=props.boatposition.lat;
-	point=sailsteermapholder.transformToMap(coordinate)
-
-  //boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
-  boatPosition=latloncoordinatetodevice(coordinate)
-//boatPosition[0]+=canvasdelta[0]
-//boatPosition[1]+=canvasdelta[1]
-  // for debugging drawpointcross(ctx,boatPosition, "green")
-  ctx.restore();
+	if(this.MapLayline)
+		DrawMapLaylines(ctx, radius, props); 
+	// for debugging drawpointcross(ctx,boatPosition, "green")
+	ctx.restore();
 }
 
 
@@ -263,28 +227,15 @@ DrawMapLaylines=function(ctx, radius, props) {
 
 
 DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
-	/*
-	if (opt_options && opt_options.fixX !== undefined) {
-		center[0]=opt_options.fixX*this.devPixelRatio;
-	}
-	if (opt_options &&  opt_options.fixY !== undefined) {
-		center[1]=opt_options.fixY*this.devPixelRatio;
-	}
-	*/
 	ctx.save();
-	
-	var x = 0;
-	var y = 0;
-
 	var radius = 0.9*radius	//0.45*Math.min(x,y)
 	ctx.rotate((angle / 180) * Math.PI)
 
-					// Laylines
+// Laylines
 	ctx.beginPath();
 	ctx.moveTo(0, 0);   // Move pen to center
 	ctx.lineTo(0, -radius);
 	ctx.closePath();
-
 
 	ctx.lineWidth = 5;//0.02*Math.min(x,y)
 	ctx.fillStyle = color;
@@ -293,8 +244,7 @@ DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
 	ctx.setLineDash([Math.floor(0.5*dashes), Math.floor(0.5*dashes)])	//0.1*Math.min(x,y), 0.1*Math.min(x,y)]);
 	ctx.stroke();
 
-	ctx.lineWidth = 0.01*Math.min(x,y)
-					// Areas	
+// Areas	
 	ctx.globalAlpha *= 0.3;
 	ctx.beginPath();
 	ctx.moveTo(0, 0);   // Move pen to center
@@ -302,9 +252,7 @@ DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
 					ctx.closePath();
 
 	ctx.fillStyle = color;
-	//ctx.setLineDash([]);
 	ctx.fill()
-					//ctx.stroke();
 	ctx.restore()
 },
 
@@ -327,9 +275,9 @@ DrawWindpfeilIcon=function(ctx, radius,angle, color, Text) {
 	else
 		ctx.moveTo(0, -radius_kompassring - 0.5*thickness); // Move pen to bottom-center corner
 	ctx.lineTo(-0.75*thickness, -radius_outer_ring-thickness); // Line to top left corner
-		ctx.lineTo(+0.75*thickness, -radius_outer_ring-thickness); // Line to top-right corner
+	ctx.lineTo(+0.75*thickness, -radius_outer_ring-thickness); // Line to top-right corner
 	ctx.closePath(); // Line to bottom-center corner
-		ctx.fillStyle = color;
+	ctx.fillStyle = color;
 	ctx.lineWidth = 0.05*thickness;
 	ctx.strokeStyle = color;
 	ctx.fill();
@@ -349,19 +297,16 @@ DrawWindpfeilIcon=function(ctx, radius,angle, color, Text) {
 
 DrawOuterRing=function(ctx,radius, angle){
 	ctx.save();
-
-	var x = 0;
-	var y = 0;
 	ctx.rotate((angle / 180) * Math.PI)
 
-					var thickness = 0.2*radius
+	var thickness = 0.2*radius
 	radius*=1.25
 	var someColors = [];
 	someColors.push("#F00");
 	someColors.push("#000");
 	someColors.push("#0F0");
 
-	drawMultiRadiantCircle(x, y, radius, thickness, someColors);
+	drawMultiRadiantCircle(0, 0, radius, thickness, someColors);
 
 	function drawMultiRadiantCircle(xc, yc, r, thickness, radientColors) 
 	{
@@ -423,7 +368,6 @@ DrawOuterRing=function(ctx,radius, angle){
 
 DrawKompassring=function(ctx,radius, angle) {
 	ctx.save();
-
 	ctx.rotate((angle / 180) * Math.PI)
 	var thickness = 0.2*radius//1*Math.min(x,y)
 					ctx.beginPath();
