@@ -221,7 +221,7 @@ class Plugin(object):
         xpoint = self.destinationPoint(src, src['course'], appr['dd'] / 1000);
         rt['crosspoint'] = xpoint
     try:
-        if (not appr['tm']):
+        if (not 'tm' in appr.keys()):
             rt['tcpa']=0; #/better undefined
             rt['cpa']=curdistance;
             rt['front']=-1;
