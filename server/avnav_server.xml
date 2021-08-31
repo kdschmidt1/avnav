@@ -77,8 +77,9 @@
         <builtin-signalk enabled="true" host="localhost" port="3000"/>
 ##CANBOAT 
 	<builtin-canboat enabled="true" allowKeyOverwrite="true" autoSendRMC="30" sourceName="canboatgen"/>
-<builtin-history storeKeys="gps.windSpeed,gps.windAngle" period="1.0" sensorNames=""/>
+<builtin-history storeKeys="gps.windSpeed,gps.windAngle" period="1.0" sensorNames="" pollingInterval="1" enabled="False"/>
 <builtin-more_nmea_Plugin WMM_FILE="WMM2020.COF" WMM_PERIOD="10" computePeriod="0.5" NewNMEAPeriod="1" FILTER_NMEA_OUT="" sourceName="more_nmea"/>
+<builtin-aisPlugin enabled="False"/>
 </AVNPluginHandler>
 
 <AVNChartHandler/>

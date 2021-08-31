@@ -17,7 +17,7 @@ var old_time=performance.now()
 var ln0_1=Math.log(0.1)
 var widget={
 
-    name:"SailsteerWidget",
+    name:"LaylineWidget",
     /**
      * a function that will render the HTML content of the widget
      * normally it should return a div with the class widgetData
