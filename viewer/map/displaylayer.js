@@ -84,7 +84,7 @@ this.Position= 0	//nav.gps.position,
 
 
 	/**
-	 * compute the icons for the Sailsteer display
+	 * compute the icons for the Layline display
 	 * @private
 	 */
 

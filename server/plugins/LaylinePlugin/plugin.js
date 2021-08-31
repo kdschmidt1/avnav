@@ -1,4 +1,4 @@
-console.log("sailsteer plugin loaded");
+console.log("layline plugin loaded");
 
 sailsteercanvas = {};
 sailsteermapholder={}
@@ -67,7 +67,7 @@ var widget={
 		LLBB:'nav.gps.LLBB',
  //       centerPosition: keys.map.centerPosition,
     },
-    caption: "Sailsteer",
+    caption: "Laylines",
     unit: "",
 };
 avnav.api.registerWidget(widget, widgetParameters);

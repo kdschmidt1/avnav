@@ -44,7 +44,7 @@ class Plugin(object):
 
         {
           'path': cls.PATHTWDSS,
-          'description': 'TWD PT1 for sailsteer',
+          'description': 'TWD PT1 for Laylines',
         },
         {
           'path': cls.PATHTLL_SB,
@@ -104,7 +104,8 @@ class Plugin(object):
     """
     seq=0
     self.api.log("started")
-    self.api.setStatus('SAILSTEER','running')
+    self.api.setStatus('STARTED', 'running')
+
     while not self.api.shouldStopMainThread():
       gpsdata=self.api.getDataByPrefix('gps')
       if 'windSpeed' in gpsdata :
@@ -112,6 +113,7 @@ class Plugin(object):
             if(calcSailsteer(self, gpsdata)):
                 self.api.addData(self.PATHTWDSS,gpsdata['TSS'])
                 calc_Laylines(self,gpsdata)  
+                self.api.setStatus('NMEA', 'computing Laylines/TSS')
 
 
 

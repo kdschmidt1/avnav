@@ -22,6 +22,7 @@
  #
  ###############################################################################
  */
+import Requests from '../util/requests.js';
 import ChartSourceBase from './chartsourcebase.js';
 import {Style as olStyle, Stroke as olStroke, Circle as olCircle, Icon as olIcon, Fill as olFill} from 'ol/style';
 import {Vector as olVectorSource} from 'ol/source';
@@ -42,7 +43,7 @@ import keys from '../util/keys.jsx';
 import globalStore from '../util/globalstore.jsx';
 
 
-var loadflag=400;
+var loadflag=200;
 
 var mapholder={};
 var canvasLayer;
@@ -124,8 +125,30 @@ class CanvasChartSource extends ChartSourceBase{
             if (this.chartEntry.minZoom !== undefined) layerOptions.minZoom=this.chartEntry.minZoom;
             if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
             canvasLayer = new ImageLayer(layerOptions);
-			ajaxload(url);//
+			//ajaxload(url);//
 			//loadcanvas(url);
+			
+			
+        Requests.getHtmlOrText(url)
+            .then((data)=>{
+                try {
+					eval.apply( window, [data] );
+                }catch (e){
+                    Toast(url+" is no valid xml: "+e.message);
+//                    this.setState({loading:false,itemInfo:{}});
+                    //this.stateHelper.setValue('name',undefined);
+                }
+            })
+            .catch((error)=>{
+                Toast("unable to load "+url+": "+error)
+                //this.setState({loading:false,itemInfo:{}});
+                //this.stateHelper.setValue('name',undefined);
+            })			
+			
+			
+			
+			
+			
             resolve([canvasLayer]);
 
         });
