@@ -9,6 +9,7 @@ import Formatter from './formatter.js';
 import Helper from './helper.js';
 import Toast from '../components/Toast.jsx';
 import featureFormatter from "./featureFormatter";
+import globalStore from '../util/globalstore.jsx';
 
 class Api{
     constructor(){
@@ -54,6 +55,14 @@ class Api{
         Toast(string,opt_time);
     }
 
+    /**
+     * read store
+     * @param string the message
+     * @param storeKeys the keys to be read
+     */
+    readStore(storeKeys){
+		return globalStore.getMultiple(storeKeys);
+    }
     /**
      * register a formatter function
      * if the formatter (name) already exists an exception is thrown
