@@ -80,6 +80,7 @@
 <builtin-history storeKeys="gps.windSpeed,gps.windAngle" period="1.0" sensorNames="" pollingInterval="1" enabled="False"/>
 <builtin-more_nmea_Plugin WMM_FILE="WMM2020.COF" WMM_PERIOD="10" computePeriod="0.5" NewNMEAPeriod="1" FILTER_NMEA_OUT="" sourceName="more_nmea"/>
 <builtin-aisPlugin enabled="False"/>
+<builtin-LaylinePlugin enabled="True"/>
 </AVNPluginHandler>
 
 <AVNChartHandler/>

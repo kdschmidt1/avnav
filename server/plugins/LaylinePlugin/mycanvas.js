@@ -1,9 +1,75 @@
 
+var mycanvasFunction = function(extent, resolution, pixelRatio, size, projection) {
+let gps={};
+	mapholder = this.mapholder;
+
+	if(typeof mycanvas_storeKeys !== 'undefined' && mycanvas_storeKeys)
+		gps=avnav.api.readStore(mycanvas_storeKeys);
+	if(!gps.valid)
+		return(null);
+	//if (!canvas) {
+		canvas = document.createElement('canvas');
+		canvas.setAttribute("width", size[0]);
+		canvas.setAttribute("height", size[1]);
+	//}
+	var context = canvas.getContext('2d');
+	// Canvas extent is different than map extent, so compute delta between 
+	// left-top of map and canvas extent.
+	var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
+
+	const mapCenter = [mapExtent[0]+(mapExtent[2]-mapExtent[0])/2,mapExtent[1]+(mapExtent[3]-mapExtent[1])/2];
+	const mapCenterPixel = mapholder.olmap.getPixelFromCoordinate(mapCenter);
+
+	var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
+	var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
+	var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
+
+	localcanvasFunction(canvas, mapholder, delta, this, gps,mapCenterPixel);
+	return canvas;
+}
+
+let read_store= function()
+{
+	let xdata;
+    let statusUrl = window.location.origin+"/viewer/avnav_navi.php?request=gps"
+    let data=undefined;
+    let lastQuery=undefined;
+    let queryPeriod=3000;
+    const fetchData=function(){
+        return new Promise(function(resolve,reject){
+            let now=(new Date()).getTime();
+            if (lastQuery !== undefined && (lastQuery+queryPeriod) >= now){
+				console.log("resolve without fetch");
+                resolve(data);
+            }
+            fetch(statusUrl)
+            .then(function (resp) {
+                return resp.json()
+            })
+            .then(function (jsdata) {
+                data=jsdata;
+                lastQuery=now;
+                resolve(data);
+            })
+            .catch(function(error){reject(error)});
+        });
+    }
+    fetchData()
+        .then(function (data) {
+           xdata=data
+
+        })
+        .catch(function (error) {
+            window.avnav.api.showToast("mycanvas error: "+error);
+        })
+	return(xdata);
+// in xdata stehen jetzt die gps-daten
+};
 
 
 
 
-var mycanvas_storeKeys={
+let mycanvas_storeKeys={
       course: 'nav.gps.course',
       myValue: 'nav.gps.test', //stored at the server side with gps.test
 		AWA:'nav.gps.AWA',
@@ -25,20 +91,18 @@ var mycanvas_storeKeys={
 		
 		}
 
-let TWD_Abweichung = [0,0]
-let old_time=performance.now()
-let ln0_1=Math.log(0.1)
-mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) {
-	//sailsteercanvas = canvas;
+let TWD_Abweichung = [0,0];
+let old_time=performance.now();
+let ln0_1=Math.log(0.1);
+load();
+localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) {
 
-
-	load();
+	//load();
+	console.log("layline-canvas");
 	const radius = 120;
-	sailsteermapholder=mapholder;
+	this.mapholder=mapholder;
 	sailsteerImageCanvasSource=ImageCanvasSource; // WIRD BENNÖTIGT IM SAILSTEER PLUGIN
 	canvasdelta = delta;
-	sailsteermapCenterPixel=mapCenterPixel;
-
 
 	ctx = canvas.getContext('2d');
 
@@ -47,9 +111,9 @@ mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,m
 	// Draw relative to the center of the canvas
 	ctx.translate(canvas.getAttribute("width") / 2, canvas.getAttribute("height") / 2);
 	// Cancel the rotation of the map.
-	ctx.rotate(-sailsteermapholder.olmap.getView().getRotation());
+	ctx.rotate(-this.mapholder.olmap.getView().getRotation());
 
-	maprotationdeg = sailsteermapholder.olmap.getView().getRotation()/Math.PI*180
+	maprotationdeg = mapholder.olmap.getView().getRotation()/Math.PI*180
 	boatrotationdeg = props.course;
 
 	calc_LaylineAreas(props)
@@ -63,12 +127,12 @@ mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,m
 		DrawWindpfeilIcon(ctx, radius, + maprotationdeg+props.TSS, "yellow", '~');
 
 		// NOW Position everything relative to the center of the map
-	ctx.translate(-sailsteermapCenterPixel[0], -sailsteermapCenterPixel[1]);
+	ctx.translate(-mapCenterPixel[0], -mapCenterPixel[1]);
 	let coordinate=[];
 	coordinate[0]=props.boatposition.lon;
 	coordinate[1]=props.boatposition.lat;
-	let point=sailsteermapholder.transformToMap(coordinate)
-	boatPosition = sailsteermapholder.olmap.getPixelFromCoordinate(point);
+	let point=mapholder.transformToMap(coordinate)
+	boatPosition = mapholder.olmap.getPixelFromCoordinate(point);
 	// for debuggingconsole.log("boatposition:"+boatPosition)
 	// for debugging drawpointcross(ctx,boatPosition, "blue")
 
@@ -81,9 +145,9 @@ mycanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,m
 //  coordinate[0]=lon;
 //  coordinate[1]=lat;
 let latloncoordinatetodevice=function(coordinate){
-	let point=sailsteermapholder.transformToMap(coordinate)
-	let Position = sailsteermapholder.olmap.getPixelFromCoordinate(point);
-	let xy=sailsteermapholder.drawing.pixelToDevice(Position); //berücksichtigt devPixelRatio
+	let point=this.mapholder.transformToMap(coordinate)
+	let Position = this.mapholder.olmap.getPixelFromCoordinate(point);
+	let xy=this.mapholder.drawing.pixelToDevice(Position); //berücksichtigt devPixelRatio
 	return(Position);
 }
 
@@ -304,9 +368,9 @@ let DrawOuterRing=function(ctx,radius, angle){
 	var thickness = 0.2*radius
 	radius*=1.25
 	var someColors = [];
-	someColors.push("#F00");
-	someColors.push("#000");
 	someColors.push("#0F0");
+	someColors.push("#000");
+	someColors.push("#F00");
 
 	drawMultiRadiantCircle(0, 0, radius, thickness, someColors);
 

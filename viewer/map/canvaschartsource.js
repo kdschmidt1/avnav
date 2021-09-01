@@ -23,7 +23,6 @@
  ###############################################################################
  */
 import Requests from '../util/requests.js';
-import Toast from '../components/Toast.jsx';
 
 
 import ChartSourceBase from './chartsourcebase.js';
@@ -107,39 +106,43 @@ class CanvasChartSource extends ChartSourceBase{
         return this.styles[feature.getGeometry().getType()];
     }
     prepareInternal() {
-        let url = this.chartEntry.url;
-        let self = this;
-        return new Promise((resolve, reject)=> {
-            if (!url) {
-                reject("no url for "+this.chartEntry.name);
-                return;
-            }
-           let canvasSource = new ImageCanvasSource({
-           canvasFunction: canvasFunction,
-           //projection: 'EPSG:3857'
-       })
-        Requests.getHtmlOrText(url)
-            .then((data)=>{
-                try {
-					eval.apply( ImageCanvasSource, [data] );
-                }catch (e){
-                    Toast(url+" is no valid js: "+e.message);
-                }
-            })
-            .catch((error)=>{
-                Toast("unable to load "+url+": "+error)
-            })			
+    	let url = this.chartEntry.url;
+    	let self = this;
+    	return new Promise((resolve, reject)=> {
+    		if (!url) {
+    			reject("no url for "+this.chartEntry.name);
+    			return;
+    		}
+    		Requests.getHtmlOrText(url)
+            		.then((data)=>{
+    			try {
+    				eval.apply( ImageCanvasSource, [data] );
+    				{
+    					let canvasSource = new ImageCanvasSource({
+    						canvasFunction: mycanvasFunction,
+    						//projection: 'EPSG:3857'
+    					})
+						canvasSource.mapholder = mapholder; 
 
-            let layerOptions={
-                source: canvasSource,
-                opacity: this.chartEntry.opacity!==undefined?parseFloat(this.chartEntry.opacity):1 ,
-            };
-            if (this.chartEntry.minZoom !== undefined) layerOptions.minZoom=this.chartEntry.minZoom;
-            if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
-            canvasLayer = new ImageLayer(layerOptions);
-			
-            resolve([canvasLayer]);
-        });
+    					let layerOptions={
+    					                  source: canvasSource,
+    					                  opacity: this.chartEntry.opacity!==undefined?parseFloat(this.chartEntry.opacity):1 ,
+    					};
+    					if (this.chartEntry.minZoom !== undefined) layerOptions.minZoom=this.chartEntry.minZoom;
+    					if (this.chartEntry.maxZoom !== undefined) layerOptions.maxZoom=this.chartEntry.maxZoom;
+    					canvasLayer = new ImageLayer(layerOptions);
+
+    					resolve([canvasLayer]);
+
+    				}
+    			}catch (e){
+    				window.avnav.api.showToast(url+" is no valid js: "+e.message);
+    			}
+    		})
+    		.catch((error)=>{
+    			window.avnav.api.showToast("unable to load "+url+": "+error)
+    		})			
+    	});
     }
     featureToInfo(feature,pixel){
         let rt={
@@ -227,33 +230,4 @@ export const readFeatureInfoFromCanvas=(doc)=>{
   }
 
 */
-let canvas = null;
-
-var canvasFunction = function(extent, resolution, pixelRatio, size, projection) {
-let gps={};
-	if(typeof mycanvas_storeKeys !== 'undefined' && mycanvas_storeKeys)
-		gps=globalStore.getMultiple(mycanvas_storeKeys);
-	if(!gps.valid)
-		return(null);
-	//if (!canvas) {
-		canvas = document.createElement('canvas');
-		canvas.setAttribute("width", size[0]);
-		canvas.setAttribute("height", size[1]);
-	//}
-	var context = canvas.getContext('2d');
-	// Canvas extent is different than map extent, so compute delta between 
-	// left-top of map and canvas extent.
-	var mapExtent = mapholder.olmap.getView().calculateExtent(mapholder.olmap.getSize())
-
-	const mapCenter = [mapExtent[0]+(mapExtent[2]-mapExtent[0])/2,mapExtent[1]+(mapExtent[3]-mapExtent[1])/2];
-	const mapCenterPixel = mapholder.olmap.getPixelFromCoordinate(mapCenter);
-
-	var canvasOrigin = mapholder.olmap.getPixelFromCoordinate([extent[0], extent[3]]);
-	var mapOrigin = mapholder.olmap.getPixelFromCoordinate([mapExtent[0], mapExtent[3]]);
-	var delta = [mapOrigin[0]-canvasOrigin[0], mapOrigin[1]-canvasOrigin[1]]	//load();
-
-	if(typeof mycanvasFunction !== 'undefined' && mycanvasFunction)
-		mycanvasFunction(canvas, mapholder, delta, canvasLayer.sourceChangeKey_.target, gps,mapCenterPixel);
-	return canvas;
-};
 

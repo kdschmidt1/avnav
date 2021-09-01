@@ -1,7 +1,5 @@
 console.log("layline plugin loaded");
 
-sailsteercanvas = {};
-sailsteermapholder={}
 sailsteerImageCanvasSource={};
 
 
