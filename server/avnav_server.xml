@@ -78,9 +78,9 @@
 ##CANBOAT 
 	<builtin-canboat enabled="true" allowKeyOverwrite="true" autoSendRMC="30" sourceName="canboatgen"/>
 <builtin-history storeKeys="gps.windSpeed,gps.windAngle" period="1.0" sensorNames="" pollingInterval="1" enabled="False"/>
-<builtin-more_nmea_Plugin WMM_FILE="WMM2020.COF" WMM_PERIOD="10" computePeriod="0.5" NewNMEAPeriod="1" FILTER_NMEA_OUT="" sourceName="more_nmea"/>
+<builtin-more_nmea_Plugin WMM_FILE="WMM2020.COF" WMM_PERIOD="11" computePeriod="0.5" NewNMEAPeriod="1" FILTER_NMEA_OUT="" sourceName="more_nmea"/>
 <builtin-aisPlugin enabled="False"/>
-<builtin-LaylinePlugin enabled="True"/>
+<builtin-LaylinePlugin enabled="True" sailsteerrefresh="97" sailsteeroverlap="True" sailsteerlength="10000" sailsteerboot="True" sailsteermarke="False" TWD_filt="0.2"/>
 </AVNPluginHandler>
 
 <AVNChartHandler/>

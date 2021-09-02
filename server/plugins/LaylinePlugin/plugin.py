@@ -26,6 +26,47 @@ class Plugin(object):
   PATHTLL_VPOL="gps.VPOL" #  Geschwindigkeit aus Polardiagramm basierend auf TWS und TWA 
 
 
+  CONFIG = [
+      {
+      'name': 'sailsteerrefresh',
+      'description': 'Time in \'sec\' to completely eliminate Layline-Area',
+      'default': '5',
+      'type': 'FLOAT'
+      },
+      {
+      'name':'sailsteerlength',
+      'description':'Length of Map-Laylines in nm',
+      'default':1000,
+      'type': 'NUMBER'
+      },
+      {
+      'name':'TWD_filt',
+      'description':'Limit Frequency for PT1-Filter of TWD',
+      'default':'0.2',
+      'type': 'FLOAT'
+      },
+      {
+      'name':'sailsteeroverlap',
+      'description':'Extent Map-Laylines over Intersection',
+          'default': True,
+          'type': 'BOOLEAN'
+      },
+      {
+          'name': 'sailsteerboot',
+          'description': 'Draw Map-Laylines from Boatposition',
+          'default': True,
+          'type': 'BOOLEAN'
+
+        },
+      {
+          'name': 'sailsteermarke',
+          'description': 'Draw Map-Laylines from Waypointposition',
+          'default': True,
+          'type': 'BOOLEAN'
+
+        },
+      ]
+
   
   @classmethod
   def pluginInfo(cls):
@@ -40,6 +81,9 @@ class Plugin(object):
     """
     return {
       'description': 'a test plugins',
+      'version': '1.0',
+      'config': cls.CONFIG,
+      
       'data': [
 
         {
@@ -74,6 +118,10 @@ class Plugin(object):
         @type  api: AVNApi
     """
     self.api = api # type: AVNApi
+    self.api.registerEditableParameters(self.CONFIG, self.changeParam)
+    self.api.registerRestart(self.stop)
+
+
     #we register an handler for API requests
     self.api.registerRequestHandler(self.handleApiRequest)
     self.count=0
@@ -82,7 +130,30 @@ class Plugin(object):
     self.oldtime=0
     self.polare={}
     self.Polare('polare.xml')
+    self.saveAllConfig()
+    self.startSequence = 0
 
+
+
+  def getConfigValue(self, name):
+    defaults = self.pluginInfo()['config']
+    for cf in defaults:
+      if cf['name'] == name:
+        return self.api.getConfigValue(name, cf.get('default'))
+    return self.api.getConfigValue(name)
+  
+  def saveAllConfig(self):
+    d = {}
+    defaults = self.pluginInfo()['config']
+    for cf in defaults:
+      v = self.getConfigValue(cf.get('name'))
+      d.update({cf.get('name'):v})
+    self.api.saveConfigValues(d)
+    return 
+  
+  def changeConfig(self, newValues):
+    self.api.saveConfigValues(newValues)
+  
   def changeParam(self,param):
     self.api.saveConfigValues(param)
     self.startSequence+=1  
@@ -175,10 +246,14 @@ class Plugin(object):
     out2=urllib.parse.urlparse(url)
     if url == 'test':
       return {'status':'OK'}
-    if url == 'reset':
+    if url == 'parameter':
       #self.count=0
-      #self.api.addData(self.PATH, self.count)
-      return {'status': 'OK'}
+      defaults = self.pluginInfo()['config']
+      b={}
+      for cf in defaults:
+          v = self.getConfigValue(cf.get('name'))
+          b.setdefault(cf.get('name'), v)
+      return(b)
     return {'status','unknown request'}
 
 def toPolWinkel(self, x,y): # [grad]
@@ -340,8 +415,8 @@ def calcSailsteer(self, gpsdata):
         t_abtast=(time.time()-self.oldtime)
         freq=1/t_abtast
         self.oldtime=time.time()
-# TODO: Grenzfrequenz sollte aus key vom Viewer oder der server.xml geladen werden
-        fgrenz=0.2#self.api.getSingleValue('sailsteerPT1_frequenz')
+
+        fgrenz=float(self.getConfigValue('TWD_filt'))
         self.windAngleSailsteer['x']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['x'], KaW['x'] - KaB['x'])
         self.windAngleSailsteer['y']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['y'], KaW['y'] - KaB['y'])
       # zurück in Polaren Winkel

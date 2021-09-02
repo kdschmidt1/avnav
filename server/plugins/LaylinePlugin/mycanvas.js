@@ -28,10 +28,12 @@ let gps={};
 	return canvas;
 }
 
-let read_store= function()
+let parameterUrl = window.location.origin+"/plugins/builtin-LaylinePlugin/api/parameter"
+let statusUrl = window.location.origin+"/viewer/avnav_navi.php?request=gps"
+/*
+let read_store= function(Url)
 {
 	let xdata;
-    let statusUrl = window.location.origin+"/viewer/avnav_navi.php?request=gps"
     let data=undefined;
     let lastQuery=undefined;
     let queryPeriod=3000;
@@ -42,7 +44,7 @@ let read_store= function()
 				console.log("resolve without fetch");
                 resolve(data);
             }
-            fetch(statusUrl)
+            fetch(Url)
             .then(function (resp) {
                 return resp.json()
             })
@@ -57,17 +59,44 @@ let read_store= function()
     fetchData()
         .then(function (data) {
            xdata=data
+			return(data);
 
         })
         .catch(function (error) {
             window.avnav.api.showToast("mycanvas error: "+error);
         })
-	return(xdata);
 // in xdata stehen jetzt die gps-daten
 };
+*/
 
+let read_parameter= function()
+{
 
-
+var id=(new Date()).getTime();
+this.requestRunning=id;
+fetch(parameterUrl)
+.then(function(data){
+	return data.json();
+})
+.then(function(json)
+	{
+	if (this.requestRunning==id) {
+		//if this is the answer to the last running request - switch of
+		//the request running - and redraw
+		this.requestRunning=undefined;
+		this.parameter=json;
+	}
+	//alert("STATUS:"+json.status);
+	})
+	.catch(function(error){
+		if (this.requestRunning==id) {
+			//if this is the answer to the last running request - switch of
+			//the request running - and redraw
+			this.requestRunning=undefined;
+		}
+		avnav.api.showToast("ERROR: "+error)}
+	);
+}
 
 let mycanvas_storeKeys={
       course: 'nav.gps.course',
@@ -82,21 +111,19 @@ let mycanvas_storeKeys={
 		valid:'nav.gps.valid',
 		boatposition: 'nav.gps.position',
 		WPposition:'nav.wp.position',
-		sailsteerrefresh:'properties.sailsteerrefresh',
-        sailsteeroverlap: 'properties.sailsteeroverlap',
-		sailsteerlength:'properties.sailsteerlength',
-		sailsteerboot: 'properties.sailsteerboot',
-		sailsteermarke: 'properties.sailsteermarke',
-		TWD_filt:	'properties.sailsteerTWDfilt',
-		
 		}
 
 let TWD_Abweichung = [0,0];
 let old_time=performance.now();
 let ln0_1=Math.log(0.1);
 load();
-localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) {
+localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, props,mapCenterPixel) 
+{
+  var self=this;
 
+	read_parameter();
+	this.parameter.sailsteerlength*=1825; //sm in m
+//para=read_store(parameterUrl)
 	//load();
 	console.log("layline-canvas");
 	const radius = 120;
@@ -171,7 +198,7 @@ let drawpointcross=function(cc,coordinates, color){
 let calc_LaylineAreas = function(props) {
 	try{
 
-		this.dist_SB = this.dist_BB = props.sailsteerlength
+		this.dist_SB = this.dist_BB = this.parameter.sailsteerlength
 		b_pos = new LatLon(props.boatposition.lat, props.boatposition.lon);
 		if (props.WPposition) {
 			WP_pos = new LatLon(props.WPposition.lat, props.WPposition.lon);
@@ -184,10 +211,10 @@ let calc_LaylineAreas = function(props) {
 				let dist_xx = pos.rhumbDistanceTo(intersection);	// in km
 				if (dist_xx>20000)	// Schnittpunkt liegt auf der gegenüberliegenden Erdseite!
 					return null;
-				if(dist_xx > props.sailsteerlength/1000) // wenn abstand gösser gewünschte LL-Länge, neuen endpunkt der LL berechnen
-					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), props.sailsteerlength/1000)
-				else if(dist_xx< props.sailsteerlength/1000 && props.sailsteeroverlap)// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
-					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), props.sailsteerlength/1000)
+				if(dist_xx > this.parameter.sailsteerlength/1000) // wenn abstand gösser gewünschte LL-Länge, neuen endpunkt der LL berechnen
+					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), this.parameter.sailsteerlength/1000)
+				else if(dist_xx< this.parameter.sailsteerlength/1000 && this.parameter.sailsteeroverlap)// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
+					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), this.parameter.sailsteerlength/1000)
 				else
 					is_xx= intersection;
 				return(is_xx)
@@ -227,7 +254,7 @@ let calc_LaylineAreas = function(props) {
 
 		// Berechnungen für die Laylineareas
 		// Die Breite der Areas (Winkelbereiche) wird über die Refreshzeit abgebaut
-		let reduktionszeit = props.sailsteerrefresh * 60
+		let reduktionszeit = this.parameter.sailsteerrefresh * 60
 
 		let difftime = (performance.now() - old_time) / 1000 // sec
 		old_time = performance.now()
@@ -263,7 +290,7 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		ctx.stroke();
 	} 
 	ctx.save();
-	if(props.sailsteerboot)
+	if(this.parameter.sailsteerboot=='True')
 	{
 		// Layline vom Boot:
 		// BBis
@@ -275,7 +302,7 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
 		this.DrawLine(p1,p2,this.MapLayline.Boat.SB.color);
 	}
-	if(props.sailsteermarke)
+	if(this.parameter.sailsteermarke=='True')
 	{
 		// Layline vom Wegpunkt:
 		// BB

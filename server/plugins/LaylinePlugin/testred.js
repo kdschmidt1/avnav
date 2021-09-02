@@ -68,9 +68,14 @@ mycanvasFunction = function(extent, resolution, pixelRatio, size, projection)
 		// NOW Position everything relative to the center of the map
 	ctx.translate(-mapCenterPixel[0], -mapCenterPixel[1]);
 	// for debuggingconsole.log("boatposition:"+boatPosition)
+	let coordinate=[];
+	coordinate[0]=coordinate[1]=0;
+	let point=this.mapholder.transformToMap(coordinate)
+	let Position = this.mapholder.olmap.getPixelFromCoordinate(point);
+
 	mapCenterPixel[0]+=10;
 	mapCenterPixel[1]+=10;
-drawpointcross(ctx,mapCenterPixel, "red")
+drawpointcross(ctx,Position, "red")
 	ctx.restore();
 	return canvas;
 }
