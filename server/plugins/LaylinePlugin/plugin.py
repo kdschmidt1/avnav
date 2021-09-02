@@ -29,7 +29,7 @@ class Plugin(object):
   CONFIG = [
       {
       'name': 'sailsteerrefresh',
-      'description': 'Time in \'sec\' to completely eliminate Layline-Area',
+      'description': 'Time in \'min\' to completely clear Layline-Area',
       'default': '5',
       'type': 'FLOAT'
       },
@@ -40,7 +40,7 @@ class Plugin(object):
       'type': 'NUMBER'
       },
       {
-      'name':'TWD_filt',
+      'name':'TWD_filtFreq',
       'description':'Limit Frequency for PT1-Filter of TWD',
       'default':'0.2',
       'type': 'FLOAT'
@@ -61,6 +61,13 @@ class Plugin(object):
       {
           'name': 'sailsteermarke',
           'description': 'Draw Map-Laylines from Waypointposition',
+          'default': True,
+          'type': 'BOOLEAN'
+
+        },
+      {
+          'name': 'TWDFilt_Indicator',
+          'description': 'Show filtered TWD Arrow',
           'default': True,
           'type': 'BOOLEAN'
 
@@ -416,7 +423,7 @@ def calcSailsteer(self, gpsdata):
         freq=1/t_abtast
         self.oldtime=time.time()
 
-        fgrenz=float(self.getConfigValue('TWD_filt'))
+        fgrenz=float(self.getConfigValue('TWD_filtFreq'))
         self.windAngleSailsteer['x']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['x'], KaW['x'] - KaB['x'])
         self.windAngleSailsteer['y']=self.PT_1funk(fgrenz, t_abtast, self.windAngleSailsteer['y'], KaW['y'] - KaB['y'])
       # zurück in Polaren Winkel

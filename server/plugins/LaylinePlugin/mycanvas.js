@@ -150,7 +150,7 @@ localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, prop
 	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
-	if(props.TWD_filt)	 
+	if(this.parameter.TWDFilt_Indicator=='True')	 
 		DrawWindpfeilIcon(ctx, radius, + maprotationdeg+props.TSS, "yellow", '~');
 
 		// NOW Position everything relative to the center of the map
