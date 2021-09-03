@@ -162,17 +162,7 @@ Drawing.prototype.drawImageToContext=function(point,image,opt_options){
         context.fill();
         context.globalAlpha=alpha;
     }
-    if (opt_options.SymbolAlpha)
-	{
-        let alpha=context.globalAlpha;
-        context.globalAlpha=opt_options.SymbolAlpha;
-    	context.drawImage(image,-anchor[0],-anchor[1], size[0]*devpixratio, size[1]*devpixratio);
-		context.globalAlpha=alpha;
-	}
-	else
-	{
-	    context.drawImage(image,-anchor[0],-anchor[1], size[0]*devpixratio, size[1]*devpixratio);
-	}
+    context.drawImage(image,-anchor[0],-anchor[1], size[0]*devpixratio, size[1]*devpixratio);
     context.restore();
     return rt;
 };

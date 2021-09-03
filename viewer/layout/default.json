@@ -1,5 +1,5 @@
 {
-  "description": "The KDS system default layout. No keys and no properties.",
+  "description": "The system default layout. No keys and no properties.",
   "layoutVersion":1,
   "properties":{
     "layers":{
@@ -244,10 +244,8 @@
       ],
       "left_small": [
         {
-          "name": "AcKDStiveRoute"
+          "name": "ActiveRoute"
         }
-      ],
-      "center": [
       ],
       "top_small": [
         {
@@ -328,7 +326,6 @@
           "name": "RoutePoints"
         }
       ],
-      "center":[],
       "left_small":[],
       "top_small": [
         {

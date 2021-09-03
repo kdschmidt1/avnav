@@ -19,7 +19,6 @@ import RoutePointsWidget from './RoutePointsWidget.jsx';
 import DateTimeWidget from './DateTimeWidget.jsx';
 import {GaugeRadial} from './CanvasGauges.jsx';
 import UndefinedWidget from './UndefinedWidget.jsx';
-import KDWidget from './KDWidget.jsx';
 
 let widgetList=[
     {
@@ -324,10 +323,6 @@ let widgetList=[
     {
         name: 'Undefined',
         wclass: UndefinedWidget
-    },
-    {
-        name: 'KD',
-        wclass: KDWidget
     }
 
 

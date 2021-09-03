@@ -181,26 +181,6 @@ class MapPage extends React.Component{
                 floatContent={this.props.mapFloat?map:undefined}
                 mainContent={
                     <React.Fragment>
-{/*
-                        <div className="centerSection">
-                            <WidgetContainer
-                                fontSize={self.props.widgetFontSize + "px"}
-								width='100%'
-								height='100%'
-								left= '8.8em'
-                                panel="center"
-                                mode="center"
-                            />
-                            <WidgetContainer
-                                fontSize={self.props.widgetFontSize + "px"}
-                                panel="top"
-                                mode="horizontal"
-                            />
-
-                            {!this.props.mapFloat && map}
-                            {self.props.overlayContent ? self.props.overlayContent : null}
-                        </div>
-*/}
                         <div className="leftSection">
                             <WidgetContainer
                                 fontSize={self.props.widgetFontSize + "px"}

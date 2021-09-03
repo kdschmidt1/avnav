@@ -256,7 +256,6 @@ let keys={
     //and the store will be filled with initial values on start
     properties: {
         layers: {
-            instrument: new Property(true, "Segel-Instrument", PropertyType.CHECKBOX),
             ais: new Property(true, "AIS", PropertyType.CHECKBOX),
             track: new Property(true, "Track", PropertyType.CHECKBOX),
             nav: new Property(true, "Navigation", PropertyType.CHECKBOX),
@@ -400,17 +399,6 @@ let keys={
         remoteChannelWrite: new Property(false,'write to remote channel',PropertyType.CHECKBOX),
         remoteGuardTime: new Property(2,'time(s) to switch read/write',PropertyType.RANGE,[1,10]),
 
-        sailsteerboot: new Property(0,"Anlieger (Laylines) vom Boot aus anzeigen",PropertyType.CHECKBOX),
-        sailsteermarke: new Property(0,"Anlieger (Laylines) vom Wegpunkt aus anzeigen",PropertyType.CHECKBOX),///*an und gibt den Zielkurs zum Erreichen der Markierung bzw. des Wegpunktes an*/
-        sailsteerrefresh: new Property(5,"Zeitraum in dem 90% der angezeigten Windabweichungen (Layline-Areas) exponentiell abgebaut werden [min]",PropertyType.RANGE,[0,60]),
-        sailsteerTWDfilt: new Property(0,"Zeige gefilterten TWD-Pfeil an",PropertyType.CHECKBOX),
-        //sailsteertide: new Property(0,"Berechnet den Gezeiteneffekt für das Boot basierend auf den COG-Daten und überträgt das Ergebnis auf die Anlieger",PropertyType.CHECKBOX),
-		sailsteeroverlap: new Property(0,"Anlieger (Laylines) über den Wende/Halse-Punkt hinaus erweitern",PropertyType.CHECKBOX),
-        sailsteerlength: new Property(100,"Legt die Länge der Anlieger (Laylines) fest [m]",PropertyType.RANGE,[0,10000]),
-        //sailsteerlimits: new Property(2,"Legt die minimale und maximale Dauer der Wende/Halse fest [min]",PropertyType.RANGE,[0,30]),
-		sailsteertransparency: new Property(20,"Transparenz des Sailsteerdisplays [%]",PropertyType.RANGE,[0,100]),
-		sailsteerPT1_frequenz: new Property(0.02,"Grenzfrequenz des TWD PT1 Filters [Hz]",PropertyType.RANGE,[0,10]),
-		
         style: {
             buttonSize: new Property(50, "Button Size(px)", PropertyType.RANGE, [35, 100]),
             aisWarningColor: new Property("#FA584A", "Warning", PropertyType.COLOR),

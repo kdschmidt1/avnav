@@ -22,7 +22,7 @@ import DimHandler from '../util/dimhandler';
 import FullScreen from '../components/Fullscreen';
 
 const settingsSections={
-    Layer:      [keys.properties.layers.base,keys.properties.layers.ais,keys.properties.layers.track,keys.properties.layers.nav,keys.properties.layers.boat,keys.properties.layers.grid,keys.properties.layers.compass,keys.properties.layers.instrument],
+    Layer:      [keys.properties.layers.base,keys.properties.layers.ais,keys.properties.layers.track,keys.properties.layers.nav,keys.properties.layers.boat,keys.properties.layers.grid,keys.properties.layers.compass],
     UpdateTimes:[keys.properties.positionQueryTimeout,keys.properties.trackQueryTimeout,keys.properties.aisQueryTimeout, keys.properties.networkTimeout ],
     Widgets:    [keys.properties.widgetFontSize,keys.properties.allowTwoWidgetRows,keys.properties.showClock,keys.properties.showZoom,keys.properties.showWind,keys.properties.showDepth],
     Buttons:    [keys.properties.style.buttonSize,keys.properties.cancelTop,keys.properties.buttonCols,keys.properties.showDimButton,keys.properties.showFullScreen,
@@ -41,9 +41,7 @@ const settingsSections={
         keys.properties.mapLockMode],
     Track:      [keys.properties.trackColor,keys.properties.trackWidth,keys.properties.trackInterval,keys.properties.initialTrackLength],
     Route:      [keys.properties.routeColor,keys.properties.routeWidth,keys.properties.routeWpSize,keys.properties.routingTextSize,keys.properties.routeApproach,keys.properties.routeShowLL],
-    Remote:     [keys.properties.remoteChannelName,keys.properties.remoteChannelRead,keys.properties.remoteChannelWrite,keys.properties.remoteGuardTime],
-    Segelinstrument:      [keys.properties.sailsteerboot,keys.properties.sailsteermarke,/*keys.properties.sailsteertide,*/keys.properties.sailsteerrefresh,keys.properties.sailsteeroverlap,keys.properties.sailsteerlength,/*keys.properties.sailsteerlimits,*/keys.properties.sailsteertransparency,keys.properties.sailsteerPT1_frequenz,keys.properties.sailsteerTWDfilt]
-
+    Remote:     [keys.properties.remoteChannelName,keys.properties.remoteChannelRead,keys.properties.remoteChannelWrite,keys.properties.remoteGuardTime]
 };
 
 const settingsConditions={

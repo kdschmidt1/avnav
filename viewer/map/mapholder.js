@@ -5,7 +5,6 @@
 
 import navobjects from '../nav/navobjects';
 import OverlayDialog from '../components/OverlayDialog.jsx';
-import DisplayLayer from './displaylayer';
 import AisLayer from './aislayer';
 import NavLayer from './navlayer';
 import TrackLayer from './tracklayer';
@@ -109,7 +108,6 @@ const MapHolder=function(){
     this.navlayer=new NavLayer(this);
     this.tracklayer=new TrackLayer(this);
     this.routinglayer=new RouteLayer(this);
-    this.displaylayer=new DisplayLayer(this);
     this.minzoom=32;
     this.mapMinZoom=32; //for checking in autozoom - differs from minzoom if the baselayer is active
     this.maxzoom=0;
@@ -1682,7 +1680,6 @@ MapHolder.prototype.onPostCompose=function(evt){
     this.drawing.setRotation(evt.frameState.viewState.rotation);
     this.drawGrid();
     this.drawNorth();
-    this.displaylayer.onPostCompose(evt.frameState.viewState.center,this.drawing,evt.frameState.pixelRatio );
     this.tracklayer.onPostCompose(evt.frameState.viewState.center,this.drawing);
     this.aislayer.onPostCompose(evt.frameState.viewState.center,this.drawing);
     this.routinglayer.onPostCompose(evt.frameState.viewState.center,this.drawing);
@@ -1776,7 +1773,6 @@ MapHolder.prototype.getCurrentChartEntry=function(){
 MapHolder.prototype.setImageStyles=function(styles){
     if (! styles || typeof(styles) !== 'object') return;
     this.navlayer.setImageStyles(styles);
-    this.displaylayer.setImageStyles(styles);
     this.aislayer.setImageStyles(styles);
     this.routinglayer.setImageStyles(styles);
     this.tracklayer.setImageStyles(styles);
