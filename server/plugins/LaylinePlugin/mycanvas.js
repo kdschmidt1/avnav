@@ -1,3 +1,7 @@
+    //http://www.movable-type.co.uk/scripts/latlong.html
+    //The longitude can be normalised to −180…+180 using (lon+540)%360-180
+
+
 
 var mycanvasFunction = function(extent, resolution, pixelRatio, size, projection) {
 let gps={};
@@ -146,8 +150,12 @@ localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, prop
 	calc_LaylineAreas(props)
 	DrawOuterRing(ctx, radius, maprotationdeg+boatrotationdeg);
 	DrawKompassring(ctx, radius, maprotationdeg);
-	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, "red")
-	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, "rgb(0,255,0)")
+
+// wenn TWD+360 > LL-angle+360 -> grün sonst -> rot
+	
+color=((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red";
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, ((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red")
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, ((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red")
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
 	if(this.parameter.TWDFilt_Indicator=='True')	 
@@ -296,11 +304,11 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		// BBis
 		p1=latloncoordinatetodevice([this.MapLayline.Boat.BB.P1._lon,this.MapLayline.Boat.BB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.Boat.BB.P2._lon,this.MapLayline.Boat.BB.P2._lat]);
-		this.DrawLine(p1,p2,this.MapLayline.Boat.BB.color);
+		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red");
 		// SB
 		p1=latloncoordinatetodevice([this.MapLayline.Boat.SB.P1._lon,this.MapLayline.Boat.SB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
-		this.DrawLine(p1,p2,this.MapLayline.Boat.SB.color);
+		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red");
 	}
 	if(this.parameter.sailsteermarke=='True')
 	{
@@ -308,11 +316,11 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		// BB
 		p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.WP.BB.P2._lon,this.MapLayline.WP.BB.P2._lat]);
-		this.DrawLine(p1,p2,this.MapLayline.WP.BB.color);
+		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red");
 		// SB
 		p1=latloncoordinatetodevice([this.MapLayline.WP.SB.P1._lon,this.MapLayline.WP.SB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.WP.SB.P2._lon,this.MapLayline.WP.SB.P2._lat]);
-		this.DrawLine(p1,p2,this.MapLayline.WP.SB.color);
+		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red");
 
 	}
 	ctx.restore()
@@ -320,6 +328,11 @@ let DrawMapLaylines=function(ctx, radius, props) {
 
 
 let DrawLaylineArea=function(ctx, radius, angle,TWD_Abweichung, color) {
+
+// TWA und LL-angle auf pos bereich umrechnen
+// wenn TWD+360 > LL-angle+360 -> grün sonst -> rot
+
+
 	ctx.save();
 	var radius = 0.9*radius	//0.45*Math.min(x,y)
 	ctx.rotate((angle / 180) * Math.PI)
