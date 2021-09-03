@@ -17,6 +17,8 @@ import json
     #// https://www.rainerstumpe.de/HTML/wind02.html
     #// https://www.segeln-forum.de/board1-rund-ums-segeln/board4-seemannschaft/46849-frage-zu-windberechnung/#post1263721
 
+    #//http://www.movable-type.co.uk/scripts/latlong.html
+    #//The longitude can be normalised to −180…+180 using (lon+540)%360-180
 
 
 class Plugin(object):
@@ -124,11 +126,12 @@ class Plugin(object):
         @param api: the api to communicate with avnav
         @type  api: AVNApi
     """
+    
     self.api = api # type: AVNApi
     self.api.registerEditableParameters(self.CONFIG, self.changeParam)
     self.api.registerRestart(self.stop)
 
-
+    vers=self.api.getAvNavVersion()
     #we register an handler for API requests
     self.api.registerRequestHandler(self.handleApiRequest)
     self.count=0
@@ -260,6 +263,7 @@ class Plugin(object):
       for cf in defaults:
           v = self.getConfigValue(cf.get('name'))
           b.setdefault(cf.get('name'), v)
+      b.setdefault('server_version', self.api.getAvNavVersion())
       return(b)
     return {'status','unknown request'}
 
