@@ -153,9 +153,10 @@ localcanvasFunction = function(canvas, mapholder, delta, ImageCanvasSource, prop
 
 // wenn TWD+360 > LL-angle+360 -> grün sonst -> rot
 	
-color=((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red";
-	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, ((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red")
-	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, ((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red")
+	
+color=((props.LLBB-props.TWD)+540)%360-180 > 0 ? "rgb(0,255,0)":"red";
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLBB, TWD_Abweichung, ((props.LLBB-props.TWD)+540)%360-180 < 0 ? "rgb(0,255,0)":"red")
+	DrawLaylineArea(ctx, radius, maprotationdeg+props.LLSB, TWD_Abweichung, ((props.LLSB-props.TWD)+540)%360-180 < 0 ? "rgb(0,255,0)":"red")
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.AWD, "rgb(0,255,0)", 'A')
 	DrawWindpfeilIcon(ctx, radius, maprotationdeg+props.TWD , "blue", 'T')
 	if(this.parameter.TWDFilt_Indicator=='True')	 
@@ -221,7 +222,7 @@ let calc_LaylineAreas = function(props) {
 					return null;
 				if(dist_xx > this.parameter.sailsteerlength/1000) // wenn abstand gösser gewünschte LL-Länge, neuen endpunkt der LL berechnen
 					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), this.parameter.sailsteerlength/1000)
-				else if(dist_xx< this.parameter.sailsteerlength/1000 && this.parameter.sailsteeroverlap)// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
+				else if(dist_xx< this.parameter.sailsteerlength/1000 && this.parameter.sailsteeroverlap=="True")// wenn abstand kleiner gewünschte LL-Länge und Verlängerung über schnittpunkt gewollt, neuen endpunkt der LL berechnen
 					is_xx = pos.rhumbDestinationPoint(pos.rhumbBearingTo(intersection), this.parameter.sailsteerlength/1000)
 				else
 					is_xx= intersection;
@@ -304,11 +305,11 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		// BBis
 		p1=latloncoordinatetodevice([this.MapLayline.Boat.BB.P1._lon,this.MapLayline.Boat.BB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.Boat.BB.P2._lon,this.MapLayline.Boat.BB.P2._lat]);
-		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red");
+		this.DrawLine(p1,p2,((props.LLBB-props.TWD)+540)%360-180 < 0 ? "rgb(0,255,0)":"red");
 		// SB
 		p1=latloncoordinatetodevice([this.MapLayline.Boat.SB.P1._lon,this.MapLayline.Boat.SB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.Boat.SB.P2._lon,this.MapLayline.Boat.SB.P2._lat]);
-		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red");
+		this.DrawLine(p1,p2,((props.LLSB-props.TWD)+540)%360-180 < 0 ? "rgb(0,255,0)":"red");
 	}
 	if(this.parameter.sailsteermarke=='True')
 	{
@@ -316,11 +317,11 @@ let DrawMapLaylines=function(ctx, radius, props) {
 		// BB
 		p1=latloncoordinatetodevice([this.MapLayline.WP.BB.P1._lon,this.MapLayline.WP.BB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.WP.BB.P2._lon,this.MapLayline.WP.BB.P2._lat]);
-		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLBB+360)) ? "rgb(0,255,0)":"red");
+		this.DrawLine(p1,p2,((props.LLBB-props.TWD)+540)%360-180 > 0  ? "rgb(0,255,0)":"red");
 		// SB
 		p1=latloncoordinatetodevice([this.MapLayline.WP.SB.P1._lon,this.MapLayline.WP.SB.P1._lat]);
 		p2=latloncoordinatetodevice([this.MapLayline.WP.SB.P2._lon,this.MapLayline.WP.SB.P2._lat]);
-		this.DrawLine(p1,p2,((props.TWD+360)>(props.LLSB+360)) ? "rgb(0,255,0)":"red");
+		this.DrawLine(p1,p2,((props.LLSB-props.TWD)+540)%360-180 > 0  ? "rgb(0,255,0)":"red");
 
 	}
 	ctx.restore()

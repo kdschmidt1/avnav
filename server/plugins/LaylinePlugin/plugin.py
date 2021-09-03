@@ -49,20 +49,20 @@ class Plugin(object):
       },
       {
       'name':'sailsteeroverlap',
-      'description':'Extent Map-Laylines over Intersection',
+      'description':'Extent Laylines over Intersection',
           'default': True,
           'type': 'BOOLEAN'
       },
       {
           'name': 'sailsteerboot',
-          'description': 'Draw Map-Laylines from Boatposition',
+          'description': 'Draw Ahead-Laylines from Boatposition on Map',
           'default': True,
           'type': 'BOOLEAN'
 
         },
       {
           'name': 'sailsteermarke',
-          'description': 'Draw Map-Laylines from Waypointposition',
+          'description': 'Draw Waypoint-Laylines  on Map',
           'default': True,
           'type': 'BOOLEAN'
 
