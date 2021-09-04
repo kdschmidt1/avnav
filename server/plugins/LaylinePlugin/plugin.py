@@ -30,13 +30,19 @@ class Plugin(object):
 
   CONFIG = [
       {
-      'name': 'sailsteerrefresh',
+      'name':'Displaysize',
+      'description':'Size of the Layline Display',
+      'default':100,
+      'type': 'NUMBER'
+      },
+      {
+      'name': 'Laylinerefresh',
       'description': 'Time in \'min\' to completely clear Layline-Area',
       'default': '5',
       'type': 'FLOAT'
       },
       {
-      'name':'sailsteerlength',
+      'name':'Laylinelength',
       'description':'Length of Map-Laylines in nm',
       'default':1000,
       'type': 'NUMBER'
@@ -48,20 +54,20 @@ class Plugin(object):
       'type': 'FLOAT'
       },
       {
-      'name':'sailsteeroverlap',
+      'name':'Laylineoverlap',
       'description':'Extent Laylines over Intersection',
           'default': True,
           'type': 'BOOLEAN'
       },
       {
-          'name': 'sailsteerboot',
+          'name': 'LaylineBoat',
           'description': 'Draw Ahead-Laylines from Boatposition on Map',
           'default': True,
           'type': 'BOOLEAN'
 
         },
       {
-          'name': 'sailsteermarke',
+          'name': 'LaylineWP',
           'description': 'Draw Waypoint-Laylines  on Map',
           'default': True,
           'type': 'BOOLEAN'

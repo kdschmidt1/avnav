@@ -22,39 +22,26 @@
  #
  ###############################################################################
  */
+
 import Requests from '../util/requests.js';
-
-
 import ChartSourceBase from './chartsourcebase.js';
 import {Style as olStyle, Stroke as olStroke, Circle as olCircle, Icon as olIcon, Fill as olFill} from 'ol/style';
-import {Vector as olVectorSource} from 'ol/source';
-import {Vector as olVectorLayer} from 'ol/layer';
 import {LineString as olLineString, MultiLineString as olMultiLineString, Point as olPoint} from 'ol/geom';
-import {GeoJSON as olGeoJSON} from 'ol/format';
 import Helper from "../util/helper";
-import MapHolder from "../map/mapholder";
-import {stylePrefix} from "./gpxchartsource";
+import globalstore from "../util/globalstore";
+import keys from "../util/keys";
+import {assign} from "ol/obj";
+import featureFormatter from "../util/featureFormatter";
 import ImageCanvasSource from 'ol/source/ImageCanvas';
 import ImageLayer from 'ol/layer/Image';
-import {Map as olMap,View as olView,
-    Feature as olFeature,
-    } from 'ol';
-import * as olProj from 'ol/proj';
-import {transform as oltransform} from 'ol/proj';
-import keys from '../util/keys.jsx';
-import globalStore from '../util/globalstore.jsx';
+//import MapHolder from "../map/mapholder";
+
+let lonlat_to_Canvas=function(coordinate) {
+		return this.mapholder.olmap.getPixelFromCoordinate(this.mapholder.transformToMap(coordinate));
+		}
 
 
-var mapholder={};
-var canvasLayer;
-let styleParam={
-    lineWidth:3,
-    lineColor: '#000000',
-    fillColor: 'rgba(255,255,0,0.4)',
-    strokeWidth: 3,
-    circleWidth: 10
-
-};
+let styleParam={};
 class CanvasChartSource extends ChartSourceBase{
     /**
      *
@@ -74,7 +61,7 @@ class CanvasChartSource extends ChartSourceBase{
         this.styleMap={};
 		this.map=mapholer.olmap;
 		//map=mapholer.olmap;
-		mapholder=mapholer;
+		this.mapholder=mapholer;
         this.styleFunction=this.styleFunction.bind(this);
 
         for (let k in styleParam) {
@@ -118,11 +105,14 @@ class CanvasChartSource extends ChartSourceBase{
     			try {
     				eval.apply( ImageCanvasSource, [data] );
     				{
+						let canvasLayer;
     					let canvasSource = new ImageCanvasSource({
     						canvasFunction: mycanvasFunction,
     						//projection: 'EPSG:3857'
     					})
-						canvasSource.mapholder = mapholder; 
+						canvasSource.mapholder = this.mapholder;
+						canvasSource.userFunction = userCanvasFunction;
+						canvasSource.lonlat_to_Canvas = lonlat_to_Canvas;  
 
     					let layerOptions={
     					                  source: canvasSource,
@@ -192,16 +182,11 @@ export default  CanvasChartSource;
 
 
 /**
- * parses an geajson document and returns a couple of flags
+ * returns Flag->hasAny because it is not really parsing a canvas document
  * to determine which kind of styling is necessary
  * @param doc
  * @returns {*}
- *      hasSymbols
- *      hasLinks
- *      hasWaypoint
- *      hasRoute
- *      hasTrack
- *      styleXXX - XXX being the keys from styleParam
+ *      hasAny
  *
  */
 export const readFeatureInfoFromCanvas=(doc)=>{
@@ -209,25 +194,37 @@ export const readFeatureInfoFromCanvas=(doc)=>{
     let rt={
         styles:{}
     };
-	// execute the loaded script
-	//eval.apply( window, [doc] );
-	//loadflag=200;
-	//eval(doc);
     rt.allowFormatter=true;
 	rt.hasAny=true;
-	//rt.script=doc;
+	rt.script=doc;
 
     return rt;
 }
-/*
-  var load=function(filename) { //https://javascript.info/modules-dynamic-imports
-    var mycanvasFunction = import(filename);//('/home/pi/git/avnav/server/plugins/SailsteerPlugin/mycanvas.js');
-	LmycanvasFunction=mycanvasFunction;
-	 // wait 3 seconds
-  //await new Promise((resolve, reject) => setTimeout(resolve, 3000));
-	//mycanvasFunction.mycanvasFunction();
-	loadflag=200;
-  }
 
-*/
 
+var mycanvasFunction = function(extent, resolution, pixelRatio, size, projection) 
+{
+	console.log("testredcanvas:");
+
+	let canvas = document.createElement('canvas');
+	canvas.setAttribute("width", size[0]);
+	canvas.setAttribute("height", size[1]);
+	var mapExtent = this.mapholder.olmap.getView().calculateExtent(this.mapholder.olmap.getSize())
+	const mapCenter = [mapExtent[0]+(mapExtent[2]-mapExtent[0])/2,mapExtent[1]+(mapExtent[3]-mapExtent[1])/2];
+	const mapCenterPixel = this.mapholder.olmap.getPixelFromCoordinate(mapCenter);
+
+	let ctx = canvas.getContext('2d');
+	ctx.save();
+	ctx.clearRect(0, 0, canvas.getAttribute("width"), canvas.getAttribute("height"));
+	// Draw relative to the center of the canvas
+	ctx.translate(canvas.getAttribute("width") / 2, canvas.getAttribute("height") / 2);
+	// Cancel the rotation of the map.
+	ctx.rotate(-this.mapholder.olmap.getView().getRotation());
+	// Position everything relative to the center of the map
+	ctx.translate(-mapCenterPixel[0], -mapCenterPixel[1]);
+// USER DEFINED CANVAS DRAWING 
+	this.userFunction(ctx);
+// END OF USER DEFINED CANVAS DRAWING
+	ctx.restore();
+	return canvas;
+}
